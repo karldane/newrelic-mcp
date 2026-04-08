@@ -46,7 +46,7 @@ func TestWriteToolsDisabledByDefault(t *testing.T) {
 		t.Fatal("Expected error when executing write tool with writeEnabled=false")
 	}
 
-	expectedError := "Write tools are disabled. Enable with --write-enabled flag."
+	expectedError := "write tools are disabled in readonly mode; start the server without --readonly to allow mutations"
 	if err.Error() != expectedError {
 		t.Errorf("Expected error message '%s', got '%s'", expectedError, err.Error())
 	}
@@ -92,7 +92,7 @@ func TestCreateAlertConditionWriteDisabled(t *testing.T) {
 		t.Fatal("Expected error when executing create_alert_condition with writeEnabled=false")
 	}
 
-	expectedError := "Write tools are disabled. Enable with --write-enabled flag."
+	expectedError := "write tools are disabled in readonly mode; start the server without --readonly to allow mutations"
 	if err.Error() != expectedError {
 		t.Errorf("Expected error message '%s', got '%s'", expectedError, err.Error())
 	}
@@ -134,7 +134,7 @@ func TestAddDashboardWidgetWriteDisabled(t *testing.T) {
 		t.Fatal("Expected error when executing add_dashboard_widget with writeEnabled=false")
 	}
 
-	expectedError := "Write tools are disabled. Enable with --write-enabled flag."
+	expectedError := "write tools are disabled in readonly mode; start the server without --readonly to allow mutations"
 	if err.Error() != expectedError {
 		t.Errorf("Expected error message '%s', got '%s'", expectedError, err.Error())
 	}

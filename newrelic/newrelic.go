@@ -168,7 +168,7 @@ func (t *NRQLQueryTool) Handle(ctx context.Context, args map[string]interface{})
 	query, _ := args["query"].(string)
 	return "Results for: " + query, nil
 }
-func (t *NRQLQueryTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *NRQLQueryTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),
@@ -185,7 +185,7 @@ func (t *ListAlertsTool) Schema() mcp.ToolInputSchema { return mcp.ToolInputSche
 func (t *ListAlertsTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
 	return "Alert policies list", nil
 }
-func (t *ListAlertsTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *ListAlertsTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
 		framework.WithImpact(framework.ImpactRead),
@@ -202,7 +202,7 @@ func (t *GetAPMMetricsTool) Schema() mcp.ToolInputSchema { return mcp.ToolInputS
 func (t *GetAPMMetricsTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
 	return "APM metrics", nil
 }
-func (t *GetAPMMetricsTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *GetAPMMetricsTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
 		framework.WithImpact(framework.ImpactRead),
@@ -219,7 +219,7 @@ func (t *SearchLogsTool) Schema() mcp.ToolInputSchema { return mcp.ToolInputSche
 func (t *SearchLogsTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
 	return "Log search results", nil
 }
-func (t *SearchLogsTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *SearchLogsTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),

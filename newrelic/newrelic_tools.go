@@ -23,7 +23,7 @@ func (t *ListApplicationsTool) Schema() mcp.ToolInputSchema {
 func (t *ListApplicationsTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
 	return "Applications list", nil
 }
-func (t *ListApplicationsTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *ListApplicationsTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
 		framework.WithImpact(framework.ImpactRead),
@@ -52,7 +52,7 @@ func (t *GetAlertConditionsTool) Handle(ctx context.Context, args map[string]int
 	}
 	return "Alert conditions", nil
 }
-func (t *GetAlertConditionsTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *GetAlertConditionsTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),
@@ -77,7 +77,7 @@ func (t *QueryTracesTool) Schema() mcp.ToolInputSchema {
 func (t *QueryTracesTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
 	return "Trace results", nil
 }
-func (t *QueryTracesTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *QueryTracesTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),
@@ -108,7 +108,7 @@ func (t *GetApplicationMetricsTool) Handle(ctx context.Context, args map[string]
 	}
 	return fmt.Sprintf("Metrics for %s", appName), nil
 }
-func (t *GetApplicationMetricsTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *GetApplicationMetricsTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
 		framework.WithImpact(framework.ImpactRead),
@@ -127,7 +127,7 @@ func (t *GetAlertViolationsTool) Schema() mcp.ToolInputSchema {
 func (t *GetAlertViolationsTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
 	return "Alert violations", nil
 }
-func (t *GetAlertViolationsTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *GetAlertViolationsTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),
@@ -175,7 +175,7 @@ func (t *GetTransactionTracesTool) Handle(ctx context.Context, args map[string]i
 	}
 	return fmt.Sprintf("Transaction traces for %s", appName), nil
 }
-func (t *GetTransactionTracesTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *GetTransactionTracesTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),
@@ -209,7 +209,7 @@ func (t *GetTraceDetailsTool) Handle(ctx context.Context, args map[string]interf
 	}
 	return fmt.Sprintf("Trace details for %s", traceID), nil
 }
-func (t *GetTraceDetailsTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *GetTraceDetailsTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),
@@ -249,7 +249,7 @@ func (t *TailLogsTool) Handle(ctx context.Context, args map[string]interface{}) 
 	query, _ := args["query"].(string)
 	return fmt.Sprintf("Latest logs for query: %s", query), nil
 }
-func (t *TailLogsTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *TailLogsTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),
@@ -299,7 +299,7 @@ func (t *GetInfrastructureMetricsTool) Handle(ctx context.Context, args map[stri
 	}
 	return "Infrastructure metrics", nil
 }
-func (t *GetInfrastructureMetricsTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *GetInfrastructureMetricsTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
 		framework.WithImpact(framework.ImpactRead),
@@ -329,7 +329,7 @@ func (t *ListDashboardsTool) Schema() mcp.ToolInputSchema {
 func (t *ListDashboardsTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
 	return "Dashboards list", nil
 }
-func (t *ListDashboardsTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *ListDashboardsTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
 		framework.WithImpact(framework.ImpactRead),
@@ -368,7 +368,7 @@ func (t *GetDashboardDataTool) Handle(ctx context.Context, args map[string]inter
 	}
 	return fmt.Sprintf("Dashboard data for %s", dashboardName), nil
 }
-func (t *GetDashboardDataTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *GetDashboardDataTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),
@@ -406,7 +406,7 @@ func (t *AcknowledgeAlertViolationTool) Handle(ctx context.Context, args map[str
 	comment, _ := args["comment"].(string)
 	return fmt.Sprintf("Acknowledged violation %s with comment: %s", violationID, comment), nil
 }
-func (t *AcknowledgeAlertViolationTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *AcknowledgeAlertViolationTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
 		framework.WithImpact(framework.ImpactWrite),
@@ -455,7 +455,7 @@ func (t *CreateAlertConditionTool) Handle(ctx context.Context, args map[string]i
 	name, _ := args["name"].(string)
 	return fmt.Sprintf("Created alert condition: %s", name), nil
 }
-func (t *CreateAlertConditionTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *CreateAlertConditionTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactWrite),
@@ -500,7 +500,7 @@ func (t *AddDashboardWidgetTool) Handle(ctx context.Context, args map[string]int
 	widgetTitle, _ := args["widget_title"].(string)
 	return fmt.Sprintf("Added widget '%s' to dashboard", widgetTitle), nil
 }
-func (t *AddDashboardWidgetTool) GetEnforcerProfile() framework.EnforcerProfile {
+func (t *AddDashboardWidgetTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
 		framework.WithImpact(framework.ImpactWrite),
