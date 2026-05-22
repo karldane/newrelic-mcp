@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/karldane/mcp-framework/framework"
+	"github.com/mark3labs/mcp-go/mcp"
 )
 
 const (
@@ -51,14 +51,14 @@ func NewClientWithEndpoint(apiKey, endpoint string) *Client {
 	return client
 }
 
-func (c *Client) GetAccountID(ctx context.Context) (string, error) {
+func (c *Client) GetAccountID(ctx context.Context) (framework.ToolResult, error) {
 	if c.accountID != "" {
-		return c.accountID, nil
+		return framework.TextResult(c.accountID), nil
 	}
 	query := `query { actor { accounts { id name } } }`
 	result, err := c.Query(ctx, query, nil)
 	if err != nil {
-		return "", err
+		return framework.TextResult(""), err
 	}
 	data, _ := result["data"].(map[string]interface{})
 	actor, _ := data["actor"].(map[string]interface{})
@@ -68,7 +68,7 @@ func (c *Client) GetAccountID(ctx context.Context) (string, error) {
 		id, _ := account["id"].(float64)
 		c.accountID = fmt.Sprintf("%.0f", id)
 	}
-	return c.accountID, nil
+	return framework.TextResult(c.accountID), nil
 }
 
 func (c *Client) Query(ctx context.Context, query string, variables map[string]interface{}) (map[string]interface{}, error) {
@@ -151,7 +151,10 @@ func (s *Server) registerTools() {
 	s.RegisterTool(&AddDashboardWidgetTool{client: s.client})
 }
 
-type NRQLQueryTool struct{ client *Client }
+type NRQLQueryTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *NRQLQueryTool) Name() string        { return "nrql_query" }
 func (t *NRQLQueryTool) Description() string { return "Execute NRQL queries" }
@@ -164,11 +167,11 @@ func (t *NRQLQueryTool) Schema() mcp.ToolInputSchema {
 		Required: []string{"query"},
 	}
 }
-func (t *NRQLQueryTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
+func (t *NRQLQueryTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	query, _ := args["query"].(string)
-	return "Results for: " + query, nil
+	return framework.TextResult("Results for: " + query), nil
 }
-func (t *NRQLQueryTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *NRQLQueryTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),
@@ -177,15 +180,18 @@ func (t *NRQLQueryTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	)
 }
 
-type ListAlertsTool struct{ client *Client }
+type ListAlertsTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *ListAlertsTool) Name() string                { return "list_alerts" }
 func (t *ListAlertsTool) Description() string         { return "List alert policies" }
 func (t *ListAlertsTool) Schema() mcp.ToolInputSchema { return mcp.ToolInputSchema{Type: "object"} }
-func (t *ListAlertsTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
-	return "Alert policies list", nil
+func (t *ListAlertsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
+	return framework.TextResult("Alert policies list"), nil
 }
-func (t *ListAlertsTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *ListAlertsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
 		framework.WithImpact(framework.ImpactRead),
@@ -194,15 +200,18 @@ func (t *ListAlertsTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	)
 }
 
-type GetAPMMetricsTool struct{ client *Client }
+type GetAPMMetricsTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *GetAPMMetricsTool) Name() string                { return "get_apm_metrics" }
 func (t *GetAPMMetricsTool) Description() string         { return "Get APM metrics" }
 func (t *GetAPMMetricsTool) Schema() mcp.ToolInputSchema { return mcp.ToolInputSchema{Type: "object"} }
-func (t *GetAPMMetricsTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
-	return "APM metrics", nil
+func (t *GetAPMMetricsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
+	return framework.TextResult("APM metrics"), nil
 }
-func (t *GetAPMMetricsTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *GetAPMMetricsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
 		framework.WithImpact(framework.ImpactRead),
@@ -211,15 +220,18 @@ func (t *GetAPMMetricsTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	)
 }
 
-type SearchLogsTool struct{ client *Client }
+type SearchLogsTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *SearchLogsTool) Name() string                { return "search_logs" }
 func (t *SearchLogsTool) Description() string         { return "Search logs" }
 func (t *SearchLogsTool) Schema() mcp.ToolInputSchema { return mcp.ToolInputSchema{Type: "object"} }
-func (t *SearchLogsTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
-	return "Log search results", nil
+func (t *SearchLogsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
+	return framework.TextResult("Log search results"), nil
 }
-func (t *SearchLogsTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *SearchLogsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),

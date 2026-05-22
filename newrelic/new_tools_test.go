@@ -47,16 +47,16 @@ func TestListApplicationsTool(t *testing.T) {
 		t.Fatalf("List applications failed: %v", err)
 	}
 
-	if result == "" {
+	if result.Content[0].Text == "" {
 		t.Error("Expected non-empty result")
 	}
 
-	if !contains(result, "MyApp") {
-		t.Errorf("Expected result to contain 'MyApp', got: %s", result)
+	if !contains(result.Content[0].Text, "MyApp") {
+		t.Errorf("Expected result to contain 'MyApp', got: %s", result.Content[0].Text)
 	}
 
-	if !contains(result, "AnotherApp") {
-		t.Errorf("Expected result to contain 'AnotherApp', got: %s", result)
+	if !contains(result.Content[0].Text, "AnotherApp") {
+		t.Errorf("Expected result to contain 'AnotherApp', got: %s", result.Content[0].Text)
 	}
 }
 
@@ -90,8 +90,8 @@ func TestListApplicationsToolNoResults(t *testing.T) {
 		t.Fatalf("List applications failed: %v", err)
 	}
 
-	if !contains(result, "No applications") {
-		t.Errorf("Expected result to indicate no applications, got: %s", result)
+	if !contains(result.Content[0].Text, "No applications") {
+		t.Errorf("Expected result to indicate no applications, got: %s", result.Content[0].Text)
 	}
 }
 
@@ -148,16 +148,16 @@ func TestGetAlertConditionsTool(t *testing.T) {
 		t.Fatalf("Get alert conditions failed: %v", err)
 	}
 
-	if result == "" {
+	if result.Content[0].Text == "" {
 		t.Error("Expected non-empty result")
 	}
 
-	if !contains(result, "Test Policy") {
-		t.Errorf("Expected result to contain 'Test Policy', got: %s", result)
+	if !contains(result.Content[0].Text, "Test Policy") {
+		t.Errorf("Expected result to contain 'Test Policy', got: %s", result.Content[0].Text)
 	}
 
-	if !contains(result, "High Error Rate") {
-		t.Errorf("Expected result to contain 'High Error Rate', got: %s", result)
+	if !contains(result.Content[0].Text, "High Error Rate") {
+		t.Errorf("Expected result to contain 'High Error Rate', got: %s", result.Content[0].Text)
 	}
 }
 
@@ -223,12 +223,12 @@ func TestQueryTracesTool(t *testing.T) {
 		t.Fatalf("Query traces failed: %v", err)
 	}
 
-	if result == "" {
+	if result.Content[0].Text == "" {
 		t.Error("Expected non-empty result")
 	}
 
-	if !contains(result, "abc123") {
-		t.Errorf("Expected result to contain trace ID 'abc123', got: %s", result)
+	if !contains(result.Content[0].Text, "abc123") {
+		t.Errorf("Expected result to contain trace ID 'abc123', got: %s", result.Content[0].Text)
 	}
 }
 
@@ -271,12 +271,12 @@ func TestGetApplicationMetricsTool(t *testing.T) {
 		t.Fatalf("Get application metrics failed: %v", err)
 	}
 
-	if result == "" {
+	if result.Content[0].Text == "" {
 		t.Error("Expected non-empty result")
 	}
 
-	if !contains(result, "throughput") {
-		t.Errorf("Expected result to contain 'throughput', got: %s", result)
+	if !contains(result.Content[0].Text, "throughput") {
+		t.Errorf("Expected result to contain 'throughput', got: %s", result.Content[0].Text)
 	}
 }
 
@@ -294,12 +294,12 @@ func TestGetTransactionTracesTool(t *testing.T) {
 		t.Fatalf("Get transaction traces failed: %v", err)
 	}
 
-	if result == "" {
+	if result.Content[0].Text == "" {
 		t.Error("Expected non-empty result")
 	}
 
-	if !contains(result, "MyApp") {
-		t.Errorf("Expected result to contain 'MyApp', got: %s", result)
+	if !contains(result.Content[0].Text, "MyApp") {
+		t.Errorf("Expected result to contain 'MyApp', got: %s", result.Content[0].Text)
 	}
 }
 
@@ -333,12 +333,12 @@ func TestGetTraceDetailsTool(t *testing.T) {
 		t.Fatalf("Get trace details failed: %v", err)
 	}
 
-	if result == "" {
+	if result.Content[0].Text == "" {
 		t.Error("Expected non-empty result")
 	}
 
-	if !contains(result, "abc123def456") {
-		t.Errorf("Expected result to contain trace ID, got: %s", result)
+	if !contains(result.Content[0].Text, "abc123def456") {
+		t.Errorf("Expected result to contain trace ID, got: %s", result.Content[0].Text)
 	}
 }
 

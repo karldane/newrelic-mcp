@@ -67,12 +67,12 @@ func TestWriteToolsEnabled(t *testing.T) {
 		t.Fatalf("Expected no error when executing write tool with writeEnabled=true, got: %v", err)
 	}
 
-	if result == "" {
+	if result.Content[0].Text == "" {
 		t.Error("Expected non-empty result")
 	}
 
-	if !contains(result, "Acknowledged") {
-		t.Errorf("Expected result to contain 'Acknowledged', got: %s", result)
+	if !contains(result.Content[0].Text, "Acknowledged") {
+		t.Errorf("Expected result to contain 'Acknowledged', got: %s", result.Content[0].Text)
 	}
 }
 
@@ -114,8 +114,8 @@ func TestCreateAlertConditionWriteEnabled(t *testing.T) {
 		t.Fatalf("Expected no error when executing create_alert_condition with writeEnabled=true, got: %v", err)
 	}
 
-	if !contains(result, "Created alert condition") {
-		t.Errorf("Expected result to contain 'Created alert condition', got: %s", result)
+	if !contains(result.Content[0].Text, "Created alert condition") {
+		t.Errorf("Expected result to contain 'Created alert condition', got: %s", result.Content[0].Text)
 	}
 }
 
@@ -155,8 +155,8 @@ func TestAddDashboardWidgetWriteEnabled(t *testing.T) {
 		t.Fatalf("Expected no error when executing add_dashboard_widget with writeEnabled=true, got: %v", err)
 	}
 
-	if !contains(result, "Added widget") {
-		t.Errorf("Expected result to contain 'Added widget', got: %s", result)
+	if !contains(result.Content[0].Text, "Added widget") {
+		t.Errorf("Expected result to contain 'Added widget', got: %s", result.Content[0].Text)
 	}
 }
 
@@ -172,7 +172,7 @@ func TestReadToolsStillWorkWithWriteDisabled(t *testing.T) {
 		t.Fatalf("Read tools should work even when write tools are disabled, got error: %v", err)
 	}
 
-	if result == "" {
+	if result.Content[0].Text == "" {
 		t.Error("Expected non-empty result from read tool")
 	}
 }

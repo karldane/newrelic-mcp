@@ -7,15 +7,36 @@ import (
 	"strings"
 
 	"github.com/karldane/newrelic-mcp/newrelic"
+	"github.com/karldane/mcp-framework/framework"
 )
 
 func main() {
+	// Get API key from environment early for scan mode
+	apiKey := os.Getenv("NEWRELIC_API_KEY")
+	region := strings.ToLower(os.Getenv("NEWRELIC_REGION"))
+	if region == "" {
+		region = "us"
+	}
+
+	// Create server BEFORE flag parsing
+	var server *newrelic.Server
+	if region == "eu" {
+		server = newrelic.NewServerWithRegion(apiKey, "eu", false)
+	} else {
+		server = newrelic.NewServer(apiKey, false)
+	}
+
+	// Handle --scan flag BEFORE flag.Parse() to avoid "flag not defined" error
+	if framework.HandleScanFlag(server.Server) {
+		// HandleScanFlag exits the program on success
+		return
+	}
+
 	// Define command-line flags
 	writeEnabled := flag.Bool("write-enabled", false, "Enable write tools (disabled by default for safety)")
 	flag.Parse()
 
-	// Get API key from environment
-	apiKey := os.Getenv("NEWRELIC_API_KEY")
+	// Check for API key after flag parsing (scan mode doesn't need it)
 	if apiKey == "" {
 		fmt.Fprintln(os.Stderr, "Error: NEWRELIC_API_KEY environment variable is required")
 		fmt.Fprintln(os.Stderr, "")
@@ -31,19 +52,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Get region from environment (defaults to us)
-	region := strings.ToLower(os.Getenv("NEWRELIC_REGION"))
-	if region == "" {
-		region = "us"
-	}
+	// Update write-enabled flag on existing server
+	server.SetWriteEnabled(*writeEnabled)
 
-	// Create server with appropriate region and write-enabled flag
-	var server *newrelic.Server
 	if region == "eu" {
-		server = newrelic.NewServerWithRegion(apiKey, "eu", *writeEnabled)
 		fmt.Fprintln(os.Stderr, "New Relic MCP Server initialized (EU region)")
 	} else {
-		server = newrelic.NewServer(apiKey, *writeEnabled)
 		fmt.Fprintln(os.Stderr, "New Relic MCP Server initialized (US region)")
 	}
 

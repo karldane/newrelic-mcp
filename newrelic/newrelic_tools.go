@@ -1,14 +1,16 @@
 package newrelic
 
 import (
-	"context"
 	"fmt"
 
-	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/karldane/mcp-framework/framework"
+	"github.com/mark3labs/mcp-go/mcp"
 )
 
-type ListApplicationsTool struct{ client *Client }
+type ListApplicationsTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *ListApplicationsTool) Name() string        { return "list_applications" }
 func (t *ListApplicationsTool) Description() string { return "List APM applications" }
@@ -20,10 +22,10 @@ func (t *ListApplicationsTool) Schema() mcp.ToolInputSchema {
 		},
 	}
 }
-func (t *ListApplicationsTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
-	return "Applications list", nil
+func (t *ListApplicationsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
+	return framework.TextResult("Applications list"), nil
 }
-func (t *ListApplicationsTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *ListApplicationsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
 		framework.WithImpact(framework.ImpactRead),
@@ -32,7 +34,10 @@ func (t *ListApplicationsTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	)
 }
 
-type GetAlertConditionsTool struct{ client *Client }
+type GetAlertConditionsTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *GetAlertConditionsTool) Name() string        { return "get_alert_conditions" }
 func (t *GetAlertConditionsTool) Description() string { return "Get alert conditions" }
@@ -45,14 +50,14 @@ func (t *GetAlertConditionsTool) Schema() mcp.ToolInputSchema {
 		Required: []string{"policy_id"},
 	}
 }
-func (t *GetAlertConditionsTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
+func (t *GetAlertConditionsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	policyID, _ := args["policy_id"].(string)
 	if policyID == "" {
-		return "", fmt.Errorf("missing required parameter: policy_id")
+		return framework.TextResult(""), fmt.Errorf("missing required parameter: policy_id")
 	}
-	return "Alert conditions", nil
+	return framework.TextResult("Alert conditions"), nil
 }
-func (t *GetAlertConditionsTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *GetAlertConditionsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),
@@ -61,7 +66,10 @@ func (t *GetAlertConditionsTool) GetEnforcerProfile() *framework.EnforcerProfile
 	)
 }
 
-type QueryTracesTool struct{ client *Client }
+type QueryTracesTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *QueryTracesTool) Name() string        { return "query_traces" }
 func (t *QueryTracesTool) Description() string { return "Query distributed traces" }
@@ -74,10 +82,10 @@ func (t *QueryTracesTool) Schema() mcp.ToolInputSchema {
 		},
 	}
 }
-func (t *QueryTracesTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
-	return "Trace results", nil
+func (t *QueryTracesTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
+	return framework.TextResult("Trace results"), nil
 }
-func (t *QueryTracesTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *QueryTracesTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),
@@ -86,7 +94,10 @@ func (t *QueryTracesTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	)
 }
 
-type GetApplicationMetricsTool struct{ client *Client }
+type GetApplicationMetricsTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *GetApplicationMetricsTool) Name() string { return "get_application_metrics" }
 func (t *GetApplicationMetricsTool) Description() string {
@@ -101,14 +112,14 @@ func (t *GetApplicationMetricsTool) Schema() mcp.ToolInputSchema {
 		Required: []string{"app_name"},
 	}
 }
-func (t *GetApplicationMetricsTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
+func (t *GetApplicationMetricsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	appName, _ := args["app_name"].(string)
 	if appName == "" {
-		return "", fmt.Errorf("missing required parameter: app_name")
+		return framework.TextResult(""), fmt.Errorf("missing required parameter: app_name")
 	}
-	return fmt.Sprintf("Metrics for %s", appName), nil
+	return framework.TextResult(fmt.Sprintf("Metrics for %s", appName)), nil
 }
-func (t *GetApplicationMetricsTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *GetApplicationMetricsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
 		framework.WithImpact(framework.ImpactRead),
@@ -117,17 +128,18 @@ func (t *GetApplicationMetricsTool) GetEnforcerProfile() *framework.EnforcerProf
 	)
 }
 
-type GetAlertViolationsTool struct{ client *Client }
+type GetAlertViolationsTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *GetAlertViolationsTool) Name() string        { return "get_alert_violations" }
 func (t *GetAlertViolationsTool) Description() string { return "Get alert violations" }
-func (t *GetAlertViolationsTool) Schema() mcp.ToolInputSchema {
-	return mcp.ToolInputSchema{Type: "object"}
+func (t *GetAlertViolationsTool) Schema() mcp.ToolInputSchema { return mcp.ToolInputSchema{Type: "object"} }
+func (t *GetAlertViolationsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
+	return framework.TextResult("Alert violations"), nil
 }
-func (t *GetAlertViolationsTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
-	return "Alert violations", nil
-}
-func (t *GetAlertViolationsTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *GetAlertViolationsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),
@@ -136,7 +148,10 @@ func (t *GetAlertViolationsTool) GetEnforcerProfile() *framework.EnforcerProfile
 	)
 }
 
-type GetTransactionTracesTool struct{ client *Client }
+type GetTransactionTracesTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *GetTransactionTracesTool) Name() string { return "get_transaction_traces" }
 func (t *GetTransactionTracesTool) Description() string {
@@ -168,14 +183,14 @@ func (t *GetTransactionTracesTool) Schema() mcp.ToolInputSchema {
 		Required: []string{"app_name"},
 	}
 }
-func (t *GetTransactionTracesTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
+func (t *GetTransactionTracesTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	appName, _ := args["app_name"].(string)
 	if appName == "" {
-		return "", fmt.Errorf("missing required parameter: app_name")
+		return framework.TextResult(""), fmt.Errorf("missing required parameter: app_name")
 	}
-	return fmt.Sprintf("Transaction traces for %s", appName), nil
+	return framework.TextResult(fmt.Sprintf("Transaction traces for %s", appName)), nil
 }
-func (t *GetTransactionTracesTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *GetTransactionTracesTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),
@@ -184,7 +199,10 @@ func (t *GetTransactionTracesTool) GetEnforcerProfile() *framework.EnforcerProfi
 	)
 }
 
-type GetTraceDetailsTool struct{ client *Client }
+type GetTraceDetailsTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *GetTraceDetailsTool) Name() string { return "get_trace_details" }
 func (t *GetTraceDetailsTool) Description() string {
@@ -202,14 +220,14 @@ func (t *GetTraceDetailsTool) Schema() mcp.ToolInputSchema {
 		Required: []string{"trace_id"},
 	}
 }
-func (t *GetTraceDetailsTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
+func (t *GetTraceDetailsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	traceID, _ := args["trace_id"].(string)
 	if traceID == "" {
-		return "", fmt.Errorf("missing required parameter: trace_id")
+		return framework.TextResult(""), fmt.Errorf("missing required parameter: trace_id")
 	}
-	return fmt.Sprintf("Trace details for %s", traceID), nil
+	return framework.TextResult(fmt.Sprintf("Trace details for %s", traceID)), nil
 }
-func (t *GetTraceDetailsTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *GetTraceDetailsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),
@@ -218,7 +236,10 @@ func (t *GetTraceDetailsTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	)
 }
 
-type TailLogsTool struct{ client *Client }
+type TailLogsTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *TailLogsTool) Name() string { return "tail_logs" }
 func (t *TailLogsTool) Description() string {
@@ -245,11 +266,11 @@ func (t *TailLogsTool) Schema() mcp.ToolInputSchema {
 		},
 	}
 }
-func (t *TailLogsTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
+func (t *TailLogsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	query, _ := args["query"].(string)
-	return fmt.Sprintf("Latest logs for query: %s", query), nil
+	return framework.TextResult(fmt.Sprintf("Latest logs for query: %s", query)), nil
 }
-func (t *TailLogsTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *TailLogsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),
@@ -258,7 +279,10 @@ func (t *TailLogsTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	)
 }
 
-type GetInfrastructureMetricsTool struct{ client *Client }
+type GetInfrastructureMetricsTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *GetInfrastructureMetricsTool) Name() string { return "get_infrastructure_metrics" }
 func (t *GetInfrastructureMetricsTool) Description() string {
@@ -292,14 +316,14 @@ func (t *GetInfrastructureMetricsTool) Schema() mcp.ToolInputSchema {
 		},
 	}
 }
-func (t *GetInfrastructureMetricsTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
+func (t *GetInfrastructureMetricsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	hostname, _ := args["hostname"].(string)
 	if hostname != "" {
-		return fmt.Sprintf("Infrastructure metrics for host: %s", hostname), nil
+		return framework.TextResult(fmt.Sprintf("Infrastructure metrics for host: %s", hostname)), nil
 	}
-	return "Infrastructure metrics", nil
+	return framework.TextResult("Infrastructure metrics"), nil
 }
-func (t *GetInfrastructureMetricsTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *GetInfrastructureMetricsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
 		framework.WithImpact(framework.ImpactRead),
@@ -308,7 +332,10 @@ func (t *GetInfrastructureMetricsTool) GetEnforcerProfile() *framework.EnforcerP
 	)
 }
 
-type ListDashboardsTool struct{ client *Client }
+type ListDashboardsTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *ListDashboardsTool) Name() string { return "list_dashboards" }
 func (t *ListDashboardsTool) Description() string {
@@ -326,10 +353,10 @@ func (t *ListDashboardsTool) Schema() mcp.ToolInputSchema {
 		},
 	}
 }
-func (t *ListDashboardsTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
-	return "Dashboards list", nil
+func (t *ListDashboardsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
+	return framework.TextResult("Dashboards list"), nil
 }
-func (t *ListDashboardsTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *ListDashboardsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
 		framework.WithImpact(framework.ImpactRead),
@@ -338,7 +365,10 @@ func (t *ListDashboardsTool) GetEnforcerProfile() *framework.EnforcerProfile {
 	)
 }
 
-type GetDashboardDataTool struct{ client *Client }
+type GetDashboardDataTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *GetDashboardDataTool) Name() string { return "get_dashboard_data" }
 func (t *GetDashboardDataTool) Description() string {
@@ -361,14 +391,14 @@ func (t *GetDashboardDataTool) Schema() mcp.ToolInputSchema {
 		Required: []string{"dashboard_name"},
 	}
 }
-func (t *GetDashboardDataTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
+func (t *GetDashboardDataTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	dashboardName, _ := args["dashboard_name"].(string)
 	if dashboardName == "" {
-		return "", fmt.Errorf("missing required parameter: dashboard_name")
+		return framework.TextResult(""), fmt.Errorf("missing required parameter: dashboard_name")
 	}
-	return fmt.Sprintf("Dashboard data for %s", dashboardName), nil
+	return framework.TextResult(fmt.Sprintf("Dashboard data for %s", dashboardName)), nil
 }
-func (t *GetDashboardDataTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *GetDashboardDataTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactRead),
@@ -379,7 +409,10 @@ func (t *GetDashboardDataTool) GetEnforcerProfile() *framework.EnforcerProfile {
 
 // Write Tools - disabled by default unless --write-enabled flag is provided
 
-type AcknowledgeAlertViolationTool struct{ client *Client }
+type AcknowledgeAlertViolationTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *AcknowledgeAlertViolationTool) Name() string { return "acknowledge_alert_violation" }
 func (t *AcknowledgeAlertViolationTool) Description() string {
@@ -401,12 +434,12 @@ func (t *AcknowledgeAlertViolationTool) Schema() mcp.ToolInputSchema {
 		Required: []string{"violation_id"},
 	}
 }
-func (t *AcknowledgeAlertViolationTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
+func (t *AcknowledgeAlertViolationTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	violationID, _ := args["violation_id"].(string)
 	comment, _ := args["comment"].(string)
-	return fmt.Sprintf("Acknowledged violation %s with comment: %s", violationID, comment), nil
+	return framework.TextResult(fmt.Sprintf("Acknowledged violation %s with comment: %s", violationID, comment)), nil
 }
-func (t *AcknowledgeAlertViolationTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *AcknowledgeAlertViolationTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
 		framework.WithImpact(framework.ImpactWrite),
@@ -416,7 +449,10 @@ func (t *AcknowledgeAlertViolationTool) GetEnforcerProfile() *framework.Enforcer
 	)
 }
 
-type CreateAlertConditionTool struct{ client *Client }
+type CreateAlertConditionTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *CreateAlertConditionTool) Name() string { return "create_alert_condition" }
 func (t *CreateAlertConditionTool) Description() string {
@@ -451,11 +487,11 @@ func (t *CreateAlertConditionTool) Schema() mcp.ToolInputSchema {
 		Required: []string{"policy_id", "name", "nrql_query", "critical_threshold"},
 	}
 }
-func (t *CreateAlertConditionTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
+func (t *CreateAlertConditionTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	name, _ := args["name"].(string)
-	return fmt.Sprintf("Created alert condition: %s", name), nil
+	return framework.TextResult(fmt.Sprintf("Created alert condition: %s", name)), nil
 }
-func (t *CreateAlertConditionTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *CreateAlertConditionTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
 		framework.WithImpact(framework.ImpactWrite),
@@ -465,7 +501,10 @@ func (t *CreateAlertConditionTool) GetEnforcerProfile() *framework.EnforcerProfi
 	)
 }
 
-type AddDashboardWidgetTool struct{ client *Client }
+type AddDashboardWidgetTool struct {
+	framework.BaseTool
+	client *Client
+}
 
 func (t *AddDashboardWidgetTool) Name() string { return "add_dashboard_widget" }
 func (t *AddDashboardWidgetTool) Description() string {
@@ -496,11 +535,11 @@ func (t *AddDashboardWidgetTool) Schema() mcp.ToolInputSchema {
 		Required: []string{"dashboard_guid", "widget_title", "nrql_query"},
 	}
 }
-func (t *AddDashboardWidgetTool) Handle(ctx context.Context, args map[string]interface{}) (string, error) {
+func (t *AddDashboardWidgetTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	widgetTitle, _ := args["widget_title"].(string)
-	return fmt.Sprintf("Added widget '%s' to dashboard", widgetTitle), nil
+	return framework.TextResult(fmt.Sprintf("Added widget '%s' to dashboard", widgetTitle)), nil
 }
-func (t *AddDashboardWidgetTool) GetEnforcerProfile() *framework.EnforcerProfile {
+func (t *AddDashboardWidgetTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
 		framework.WithImpact(framework.ImpactWrite),

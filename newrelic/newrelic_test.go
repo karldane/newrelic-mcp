@@ -92,13 +92,13 @@ func TestNRQLQueryTool(t *testing.T) {
 		t.Fatalf("NRQL query failed: %v", err)
 	}
 
-	if result == "" {
+	if result.Content[0].Text == "" {
 		t.Error("Expected non-empty result")
 	}
 
 	// Verify result contains expected data
-	if !contains(result, "42") {
-		t.Errorf("Expected result to contain '42', got: %s", result)
+	if !contains(result.Content[0].Text, "42") {
+		t.Errorf("Expected result to contain '42', got: %s", result.Content[0].Text)
 	}
 }
 
@@ -155,7 +155,7 @@ func TestNRQLQueryToolMissingAccountID(t *testing.T) {
 		}
 	} else {
 		// If it succeeded, even better
-		if result == "" {
+		if result.Content[0].Text == "" {
 			t.Error("Expected non-empty result")
 		}
 	}
@@ -200,12 +200,12 @@ func TestListAlertsTool(t *testing.T) {
 		t.Fatalf("List alerts failed: %v", err)
 	}
 
-	if result == "" {
+	if result.Content[0].Text == "" {
 		t.Error("Expected non-empty result")
 	}
 
-	if !contains(result, "Test Policy") {
-		t.Errorf("Expected result to contain 'Test Policy', got: %s", result)
+	if !contains(result.Content[0].Text, "Test Policy") {
+		t.Errorf("Expected result to contain 'Test Policy', got: %s", result.Content[0].Text)
 	}
 }
 
@@ -247,7 +247,7 @@ func TestGetAPMMetricsTool(t *testing.T) {
 		t.Fatalf("Get APM metrics failed: %v", err)
 	}
 
-	if result == "" {
+	if result.Content[0].Text == "" {
 		t.Error("Expected non-empty result")
 	}
 }
@@ -290,7 +290,7 @@ func TestSearchLogsTool(t *testing.T) {
 		t.Fatalf("Search logs failed: %v", err)
 	}
 
-	if result == "" {
+	if result.Content[0].Text == "" {
 		t.Error("Expected non-empty result")
 	}
 }
