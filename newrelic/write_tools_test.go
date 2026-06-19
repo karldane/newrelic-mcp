@@ -169,9 +169,14 @@ func TestReadToolsStillWorkWithWriteDisabled(t *testing.T) {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"data": map[string]interface{}{
 				"actor": map[string]interface{}{
-					"account": map[string]interface{}{
-						"apm": map[string]interface{}{
-							"results": []interface{}{},
+					"accounts": []map[string]interface{}{
+						{"id": float64(12345), "name": "Test Account"},
+					},
+					"entitySearch": map[string]interface{}{
+						"results": map[string]interface{}{
+							"entities": []map[string]interface{}{
+								{"guid": "g1", "name": "App1"},
+							},
 						},
 					},
 				},

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -180,12 +181,12 @@ func TestGetAccountIDNoAccounts(t *testing.T) {
 	defer mockNR.Close()
 
 	client := NewClientWithEndpoint("test-key", mockNR.URL)
-	id, err := client.GetAccountID(context.Background())
-	if err != nil {
-		t.Fatalf("Unexpected error: %v", err)
+	_, err := client.GetAccountID(context.Background())
+	if err == nil {
+		t.Fatal("Expected error for no accounts")
 	}
-	if id != "" {
-		t.Errorf("Expected empty string for no accounts, got: %s", id)
+	if !contains(err.Error(), "no accounts found") {
+		t.Errorf("Expected 'no accounts found', got: %v", err)
 	}
 }
 
@@ -549,9 +550,9 @@ func TestListDashboardsTool(t *testing.T) {
 		response := map[string]interface{}{
 			"data": map[string]interface{}{
 				"actor": map[string]interface{}{
-					"account": map[string]interface{}{
-						"dashboards": map[string]interface{}{
-							"dashboards": []map[string]interface{}{
+					"entitySearch": map[string]interface{}{
+						"results": map[string]interface{}{
+							"entities": []map[string]interface{}{
 								{
 									"guid": "guid-123",
 									"name": "Production Overview",
@@ -595,9 +596,9 @@ func TestListDashboardsToolNoResults(t *testing.T) {
 		response := map[string]interface{}{
 			"data": map[string]interface{}{
 				"actor": map[string]interface{}{
-					"account": map[string]interface{}{
-						"dashboards": map[string]interface{}{
-							"dashboards": []map[string]interface{}{},
+					"entitySearch": map[string]interface{}{
+						"results": map[string]interface{}{
+							"entities": []map[string]interface{}{},
 						},
 					},
 				},
@@ -626,16 +627,14 @@ func TestGetDashboardDataTool(t *testing.T) {
 		response := map[string]interface{}{
 			"data": map[string]interface{}{
 				"actor": map[string]interface{}{
-					"account": map[string]interface{}{
-						"dashboard": map[string]interface{}{
-							"guid":        "guid-123",
-							"name":        "Production Overview",
-							"description": "Main production dashboard",
-							"pages": []map[string]interface{}{
-								{
-									"widgets": []map[string]interface{}{
-										{"id": "w1", "title": "CPU Usage"},
-									},
+					"entity": map[string]interface{}{
+						"guid":        "guid-123",
+						"name":        "Production Overview",
+						"description": "Main production dashboard",
+						"pages": []map[string]interface{}{
+							{
+								"widgets": []map[string]interface{}{
+									{"id": "w1", "title": "CPU Usage"},
 								},
 							},
 						},
@@ -651,8 +650,8 @@ func TestGetDashboardDataTool(t *testing.T) {
 	server := NewServerWithEndpoint("test-key", mockNR.URL)
 	ctx := context.Background()
 	result, err := server.ExecuteTool(ctx, "get_dashboard_data", map[string]interface{}{
-		"account_id":    "12345",
-		"dashboard_name": "Production Overview",
+		"account_id":     "12345",
+		"dashboard_guid": "guid-123",
 	})
 	if err != nil {
 		t.Fatalf("Get dashboard data failed: %v", err)
@@ -669,9 +668,7 @@ func TestGetDashboardDataToolNotFound(t *testing.T) {
 	mockNR := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := map[string]interface{}{
 			"data": map[string]interface{}{
-				"actor": map[string]interface{}{
-					"account": map[string]interface{}{},
-				},
+				"actor": map[string]interface{}{},
 			},
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -682,14 +679,80 @@ func TestGetDashboardDataToolNotFound(t *testing.T) {
 	server := NewServerWithEndpoint("test-key", mockNR.URL)
 	ctx := context.Background()
 	result, err := server.ExecuteTool(ctx, "get_dashboard_data", map[string]interface{}{
-		"account_id":    "12345",
-		"dashboard_name": "Nonexistent Dashboard",
+		"account_id":     "12345",
+		"dashboard_guid": "nonexistent-guid",
 	})
 	if err != nil {
 		t.Fatalf("Get dashboard data failed: %v", err)
 	}
 	if !contains(result.RawText, "not found") {
 		t.Errorf("Expected 'not found', got: %s", result.RawText)
+	}
+}
+
+func TestGetApplicationMetricsEscapesAppName(t *testing.T) {
+	var capturedQuery string
+	mockNR := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		buf := make([]byte, 4096)
+		n, _ := r.Body.Read(buf)
+		capturedQuery = string(buf[:n])
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"data": map[string]interface{}{
+				"actor": map[string]interface{}{
+					"account": map[string]interface{}{
+						"nrql": map[string]interface{}{
+							"results": []map[string]interface{}{
+								{"throughput": 100, "errorRate": 0.5},
+							},
+						},
+					},
+				},
+			},
+		})
+	}))
+	defer mockNR.Close()
+
+	server := NewServerWithEndpoint("test-key", mockNR.URL)
+	ctx := context.Background()
+
+	_, err := server.ExecuteTool(ctx, "get_application_metrics", map[string]interface{}{
+		"account_id": "12345",
+		"app_name":   "AppWith'Quote",
+	})
+	if err != nil {
+		t.Fatalf("Get app metrics failed: %v", err)
+	}
+
+	if !strings.Contains(capturedQuery, "AppWith''Quote") {
+		t.Errorf("Expected escaped app name (''), got query: %s", capturedQuery)
+	}
+	if strings.Contains(capturedQuery, "AppWith'Quote") && !strings.Contains(capturedQuery, "AppWith''Quote") {
+		t.Errorf("App name with single quote not escaped, got query: %s", capturedQuery)
+	}
+}
+
+func TestFormatValueComplexTypes(t *testing.T) {
+	nested := map[string]interface{}{
+		"nested_key": "value",
+	}
+	result := formatValue(nested)
+	var decoded map[string]interface{}
+	if err := json.Unmarshal([]byte(result), &decoded); err != nil {
+		t.Errorf("Expected JSON for map, got: %s", result)
+	}
+	if decoded["nested_key"] != "value" {
+		t.Errorf("Expected 'value', got: %v", decoded["nested_key"])
+	}
+	if contains(result, "map[") || contains(result, "%!(EXTRA") {
+		t.Errorf("Result should not contain Go formatting artifacts, got: %s", result)
+	}
+
+	arr := []interface{}{"a", "b", "c"}
+	result = formatValue(arr)
+	var decodedArr []interface{}
+	if err := json.Unmarshal([]byte(result), &decodedArr); err != nil {
+		t.Errorf("Expected JSON array, got: %s", result)
 	}
 }
 
@@ -753,9 +816,9 @@ func TestListDashboardsToolMissingAccountID(t *testing.T) {
 					"accounts": []map[string]interface{}{
 						{"id": float64(12345), "name": "Test Account"},
 					},
-					"account": map[string]interface{}{
-						"dashboards": map[string]interface{}{
-							"dashboards": []map[string]interface{}{
+					"entitySearch": map[string]interface{}{
+						"results": map[string]interface{}{
+							"entities": []map[string]interface{}{
 								{"guid": "g1", "name": "Auto Dashboard"},
 							},
 						},

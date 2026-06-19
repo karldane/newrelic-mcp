@@ -27,48 +27,52 @@ func (t *ListApplicationsTool) Schema() mcp.ToolInputSchema {
 }
 func (t *ListApplicationsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	accountID, _ := args["account_id"].(string)
-	aid, err := t.client.getOrDetectAccountID(ctx, accountID)
+	_, err := t.client.getOrDetectAccountID(ctx, accountID)
 	if err != nil {
 		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
 	}
 	limit, _ := args["limit"].(float64)
-	limitClause := ""
+	limitStr := ""
 	if limit > 0 {
-		limitClause = fmt.Sprintf(" LIMIT %.0f", limit)
+		limitStr = fmt.Sprintf(", limit: %.0f", limit)
 	}
 	gql := fmt.Sprintf(`{
 	  actor {
-		account(id: %s) {
-		  apm {
-			results: applicationSearch {
-			  applications {
-				appName: name
-				host: host
+		entitySearch(queryBuilder: {domain: APM, type: APPLICATION%s}) {
+		  results {
+			entities {
+			  ... on ApmApplicationEntityOutline {
+				guid
+				name
+				language
 			  }
 			}
 		  }
 		}
 	  }
-	}`, aid)
-	acct, err := t.client.nerdGraphQuery(ctx, gql)
+	}`, limitStr)
+	actor, err := t.client.actorGraphQuery(ctx, gql)
 	if err != nil {
 		return framework.TextResult(""), fmt.Errorf("failed to query applications: %w", err)
 	}
-	apmMap, _ := acct["apm"].(map[string]interface{})
-	if apmMap == nil {
+	entitySearch, _ := actor["entitySearch"].(map[string]interface{})
+	if entitySearch == nil {
 		return framework.TextResult("No applications found"), nil
 	}
-	rawResults, _ := apmMap["results"].([]interface{})
+	results, _ := entitySearch["results"].(map[string]interface{})
+	if results == nil {
+		return framework.TextResult("No applications found"), nil
+	}
+	rawEntities, _ := results["entities"].([]interface{})
 	var apps []map[string]interface{}
-	for _, r := range rawResults {
-		if m, ok := r.(map[string]interface{}); ok {
+	for _, e := range rawEntities {
+		if m, ok := e.(map[string]interface{}); ok {
 			apps = append(apps, m)
 		}
 	}
 	if len(apps) == 0 {
 		return framework.TextResult("No applications found"), nil
 	}
-	_ = limitClause
 	return framework.TextResult(formatResults(apps)), nil
 }
 func (t *ListApplicationsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
@@ -206,7 +210,7 @@ func (t *QueryTracesTool) Handle(ctx framework.CallContext, args map[string]inte
 	where := ""
 	var filters []string
 	if serviceName != "" {
-		filters = append(filters, fmt.Sprintf("entity.name = '%s'", serviceName))
+		filters = append(filters, fmt.Sprintf("entity.name = '%s'", escapeString(serviceName)))
 	}
 	if errorOnly {
 		filters = append(filters, "error = true")
@@ -261,7 +265,7 @@ func (t *GetApplicationMetricsTool) Handle(ctx framework.CallContext, args map[s
 	if err != nil {
 		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
 	}
-	nrql := fmt.Sprintf("SELECT throughput, errorRate, responseTime, apdex FROM APMApplication WHERE appName = '%s' SINCE 1 hour ago", appName)
+	nrql := fmt.Sprintf("SELECT throughput, errorRate, responseTime, apdex FROM APMApplication WHERE appName = '%s' SINCE 1 hour ago", escapeString(appName))
 	results, err := t.client.executeNRQL(ctx, aid, nrql)
 	if err != nil {
 		return framework.TextResult(""), fmt.Errorf("metrics query failed: %w", err)
@@ -549,13 +553,13 @@ func (t *GetInfrastructureMetricsTool) Handle(ctx framework.CallContext, args ma
 	where := ""
 	var filters []string
 	if hostname != "" {
-		filters = append(filters, fmt.Sprintf("hostname = '%s'", hostname))
+		filters = append(filters, fmt.Sprintf("hostname = '%s'", escapeString(hostname)))
 	}
 	if containerName != "" {
-		filters = append(filters, fmt.Sprintf("containerName = '%s'", containerName))
+		filters = append(filters, fmt.Sprintf("containerName = '%s'", escapeString(containerName)))
 	}
 	if clusterName != "" {
-		filters = append(filters, fmt.Sprintf("clusterName = '%s'", clusterName))
+		filters = append(filters, fmt.Sprintf("clusterName = '%s'", escapeString(clusterName)))
 	}
 	if len(filters) > 0 {
 		where = " WHERE " + strings.Join(filters, " AND ")
@@ -599,36 +603,41 @@ func (t *ListDashboardsTool) Schema() mcp.ToolInputSchema {
 }
 func (t *ListDashboardsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	accountID, _ := args["account_id"].(string)
-	aid, err := t.client.getOrDetectAccountID(ctx, accountID)
+	_, err := t.client.getOrDetectAccountID(ctx, accountID)
 	if err != nil {
 		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
 	}
-	gql := fmt.Sprintf(`{
+	gql := `{
 	  actor {
-		account(id: %s) {
-		  dashboards {
-			dashboards {
-			  guid
-			  name
-			  description
-			  createdAt
+		entitySearch(queryBuilder: {type: DASHBOARD}) {
+		  results {
+			entities {
+			  ... on DashboardEntityOutline {
+				guid
+				name
+				description
+			  }
 			}
 		  }
 		}
 	  }
-	}`, aid)
-	acct, err := t.client.nerdGraphQuery(ctx, gql)
+	}`
+	actor, err := t.client.actorGraphQuery(ctx, gql)
 	if err != nil {
 		return framework.TextResult(""), fmt.Errorf("failed to query dashboards: %w", err)
 	}
-	dashboardsMap, _ := acct["dashboards"].(map[string]interface{})
-	if dashboardsMap == nil {
+	entitySearch, _ := actor["entitySearch"].(map[string]interface{})
+	if entitySearch == nil {
 		return framework.TextResult("No dashboards found"), nil
 	}
-	rawDashboards, _ := dashboardsMap["dashboards"].([]interface{})
+	results, _ := entitySearch["results"].(map[string]interface{})
+	if results == nil {
+		return framework.TextResult("No dashboards found"), nil
+	}
+	rawEntities, _ := results["entities"].([]interface{})
 	var dashboards []map[string]interface{}
-	for _, d := range rawDashboards {
-		if m, ok := d.(map[string]interface{}); ok {
+	for _, e := range rawEntities {
+		if m, ok := e.(map[string]interface{}); ok {
 			dashboards = append(dashboards, m)
 		}
 	}
@@ -659,9 +668,9 @@ func (t *GetDashboardDataTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
 		Properties: map[string]interface{}{
-			"dashboard_name": map[string]interface{}{
+			"dashboard_guid": map[string]interface{}{
 				"type":        "string",
-				"description": "Name of the dashboard",
+				"description": "GUID of the dashboard",
 			},
 			"duration": map[string]interface{}{
 				"type":        "string",
@@ -670,23 +679,23 @@ func (t *GetDashboardDataTool) Schema() mcp.ToolInputSchema {
 			},
 			"account_id": map[string]interface{}{"type": "string", "description": "Account ID (optional)"},
 		},
-		Required: []string{"dashboard_name"},
+		Required: []string{"dashboard_guid"},
 	}
 }
 func (t *GetDashboardDataTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
-	dashboardName, _ := args["dashboard_name"].(string)
-	if dashboardName == "" {
-		return framework.TextResult(""), fmt.Errorf("missing required parameter: dashboard_name")
+	dashboardGUID, _ := args["dashboard_guid"].(string)
+	if dashboardGUID == "" {
+		return framework.TextResult(""), fmt.Errorf("missing required parameter: dashboard_guid")
 	}
 	accountID, _ := args["account_id"].(string)
-	aid, err := t.client.getOrDetectAccountID(ctx, accountID)
+	_, err := t.client.getOrDetectAccountID(ctx, accountID)
 	if err != nil {
 		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
 	}
 	gql := fmt.Sprintf(`{
 	  actor {
-		account(id: %s) {
-		  dashboard(name: "%s") {
+		entity(guid: "%s") {
+		  ... on DashboardEntity {
 			guid
 			name
 			description
@@ -702,14 +711,14 @@ func (t *GetDashboardDataTool) Handle(ctx framework.CallContext, args map[string
 		  }
 		}
 	  }
-	}`, aid, dashboardName)
-	acct, err := t.client.nerdGraphQuery(ctx, gql)
+	}`, dashboardGUID)
+	actor, err := t.client.actorGraphQuery(ctx, gql)
 	if err != nil {
 		return framework.TextResult(""), fmt.Errorf("failed to query dashboard: %w", err)
 	}
-	dashboard, _ := acct["dashboard"].(map[string]interface{})
+	dashboard, _ := actor["entity"].(map[string]interface{})
 	if dashboard == nil {
-		return framework.TextResult(fmt.Sprintf("Dashboard '%s' not found", dashboardName)), nil
+		return framework.TextResult(fmt.Sprintf("Dashboard with GUID '%s' not found", dashboardGUID)), nil
 	}
 	return framework.TextResult(formatSingleResult(dashboard)), nil
 }

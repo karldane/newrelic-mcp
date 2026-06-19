@@ -13,16 +13,18 @@ func TestListApplicationsTool(t *testing.T) {
 		response := map[string]interface{}{
 			"data": map[string]interface{}{
 				"actor": map[string]interface{}{
-					"account": map[string]interface{}{
-						"apm": map[string]interface{}{
-							"results": []map[string]interface{}{
+					"entitySearch": map[string]interface{}{
+						"results": map[string]interface{}{
+							"entities": []map[string]interface{}{
 								{
-									"appName": "MyApp",
-									"host":    "host1.example.com",
+									"guid":     "guid-1",
+									"name":     "MyApp",
+									"language": "java",
 								},
 								{
-									"appName": "AnotherApp",
-									"host":    "host2.example.com",
+									"guid":     "guid-2",
+									"name":     "AnotherApp",
+									"language": "ruby",
 								},
 							},
 						},
@@ -65,9 +67,9 @@ func TestListApplicationsToolNoResults(t *testing.T) {
 		response := map[string]interface{}{
 			"data": map[string]interface{}{
 				"actor": map[string]interface{}{
-					"account": map[string]interface{}{
-						"apm": map[string]interface{}{
-							"results": []map[string]interface{}{},
+					"entitySearch": map[string]interface{}{
+						"results": map[string]interface{}{
+							"entities": []map[string]interface{}{},
 						},
 					},
 				},

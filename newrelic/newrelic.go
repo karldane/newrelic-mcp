@@ -53,6 +53,22 @@ func NewClientWithEndpoint(apiKey, endpoint string) *Client {
 	return client
 }
 
+func (c *Client) actorGraphQuery(ctx context.Context, gql string) (map[string]interface{}, error) {
+	result, err := c.Query(ctx, gql, nil)
+	if err != nil {
+		return nil, err
+	}
+	data, _ := result["data"].(map[string]interface{})
+	if data == nil {
+		return nil, fmt.Errorf("no data in response")
+	}
+	actor, _ := data["actor"].(map[string]interface{})
+	if actor == nil {
+		return nil, fmt.Errorf("no actor in response")
+	}
+	return actor, nil
+}
+
 func (c *Client) nerdGraphQuery(ctx context.Context, gql string) (map[string]interface{}, error) {
 	result, err := c.Query(ctx, gql, nil)
 	if err != nil {
@@ -89,6 +105,9 @@ func (c *Client) GetAccountID(ctx context.Context) (string, error) {
 		account, _ := accounts[0].(map[string]interface{})
 		id, _ := account["id"].(float64)
 		c.accountID = fmt.Sprintf("%.0f", id)
+	}
+	if c.accountID == "" {
+		return "", fmt.Errorf("no accounts found for API key")
 	}
 	return c.accountID, nil
 }
@@ -150,6 +169,19 @@ func (c *Client) executeNRQL(ctx context.Context, accountID, nrql string) ([]map
 	return results, nil
 }
 
+func formatValue(v interface{}) string {
+	switch val := v.(type) {
+	case map[string]interface{}, []interface{}:
+		b, err := json.Marshal(val)
+		if err != nil {
+			return fmt.Sprintf("%v", v)
+		}
+		return string(b)
+	default:
+		return fmt.Sprintf("%v", v)
+	}
+}
+
 func formatResults(results []map[string]interface{}) string {
 	if len(results) == 0 {
 		return "No results found"
@@ -165,7 +197,7 @@ func formatResults(results []map[string]interface{}) string {
 		}
 		sort.Strings(keys)
 		for _, k := range keys {
-			sb.WriteString(fmt.Sprintf("%s: %v\n", k, r[k]))
+			sb.WriteString(fmt.Sprintf("%s: %s\n", k, formatValue(r[k])))
 		}
 	}
 	return strings.TrimRight(sb.String(), "\n")
@@ -182,7 +214,7 @@ func formatSingleResult(r map[string]interface{}) string {
 	}
 	sort.Strings(keys)
 	for _, k := range keys {
-		sb.WriteString(fmt.Sprintf("%s: %v\n", k, r[k]))
+		sb.WriteString(fmt.Sprintf("%s: %s\n", k, formatValue(r[k])))
 	}
 	return strings.TrimRight(sb.String(), "\n")
 }
