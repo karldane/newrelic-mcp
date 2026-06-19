@@ -53,6 +53,22 @@ func NewClientWithEndpoint(apiKey, endpoint string) *Client {
 	return client
 }
 
+func graphQLError(result map[string]interface{}) string {
+	rawErrors, _ := result["errors"].([]interface{})
+	if len(rawErrors) == 0 {
+		return ""
+	}
+	var msgs []string
+	for _, e := range rawErrors {
+		if m, ok := e.(map[string]interface{}); ok {
+			if msg, ok := m["message"].(string); ok {
+				msgs = append(msgs, msg)
+			}
+		}
+	}
+	return strings.Join(msgs, "; ")
+}
+
 func (c *Client) actorGraphQuery(ctx context.Context, gql string) (map[string]interface{}, error) {
 	result, err := c.Query(ctx, gql, nil)
 	if err != nil {
@@ -60,6 +76,9 @@ func (c *Client) actorGraphQuery(ctx context.Context, gql string) (map[string]in
 	}
 	data, _ := result["data"].(map[string]interface{})
 	if data == nil {
+		if errMsg := graphQLError(result); errMsg != "" {
+			return nil, fmt.Errorf("GraphQL error: %s", errMsg)
+		}
 		return nil, fmt.Errorf("no data in response")
 	}
 	actor, _ := data["actor"].(map[string]interface{})
@@ -76,6 +95,9 @@ func (c *Client) nerdGraphQuery(ctx context.Context, gql string) (map[string]int
 	}
 	data, _ := result["data"].(map[string]interface{})
 	if data == nil {
+		if errMsg := graphQLError(result); errMsg != "" {
+			return nil, fmt.Errorf("GraphQL error: %s", errMsg)
+		}
 		return nil, fmt.Errorf("no data in response")
 	}
 	actor, _ := data["actor"].(map[string]interface{})
@@ -421,7 +443,7 @@ func (t *GetAPMMetricsTool) Handle(ctx framework.CallContext, args map[string]in
 	if err != nil {
 		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
 	}
-	nrql := fmt.Sprintf("SELECT appName, duration, throughput, errorPercentage FROM APMApplication WHERE appName = '%s' SINCE %s", appName, duration)
+	nrql := fmt.Sprintf("SELECT appName, duration, throughput, errorPercentage FROM APMApplication WHERE appName = '%s' SINCE %s ago", escapeString(appName), duration)
 	results, err := t.client.executeNRQL(ctx, aid, nrql)
 	if err != nil {
 		return framework.TextResult(""), fmt.Errorf("APM metrics query failed: %w", err)
@@ -469,7 +491,7 @@ func (t *SearchLogsTool) Handle(ctx framework.CallContext, args map[string]inter
 			whereClause = " WHERE " + parsed
 		}
 	}
-	nrql := fmt.Sprintf("SELECT timestamp, message, level, service FROM Log SINCE %s%s LIMIT 100", duration, whereClause)
+	nrql := fmt.Sprintf("SELECT timestamp, message, level, service FROM Log SINCE %s ago%s LIMIT 100", duration, whereClause)
 	results, err := t.client.executeNRQL(ctx, aid, nrql)
 	if err != nil {
 		return framework.TextResult(""), fmt.Errorf("log search failed: %w", err)

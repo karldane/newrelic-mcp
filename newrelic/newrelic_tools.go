@@ -218,7 +218,7 @@ func (t *QueryTracesTool) Handle(ctx framework.CallContext, args map[string]inte
 	if len(filters) > 0 {
 		where = " WHERE " + strings.Join(filters, " AND ")
 	}
-	nrql := fmt.Sprintf("SELECT traceId, duration, entity.name, error FROM Transaction SINCE %s%s LIMIT 50", duration, where)
+	nrql := fmt.Sprintf("SELECT traceId, duration, entity.name, error FROM Transaction SINCE %s ago%s LIMIT 50", duration, where)
 	results, err := t.client.executeNRQL(ctx, aid, nrql)
 	if err != nil {
 		return framework.TextResult(""), fmt.Errorf("trace query failed: %w", err)
@@ -310,7 +310,7 @@ func (t *GetAlertViolationsTool) Handle(ctx framework.CallContext, args map[stri
 	if err != nil {
 		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
 	}
-	nrql := fmt.Sprintf("SELECT violationId, policyName, conditionName, priority, openedAt, closedAt FROM AlertViolation SINCE %s LIMIT 100", duration)
+	nrql := fmt.Sprintf("SELECT violationId, policyName, conditionName, priority, openedAt, closedAt FROM AlertViolation SINCE %s ago LIMIT 100", duration)
 	results, err := t.client.executeNRQL(ctx, aid, nrql)
 	if err != nil {
 		return framework.TextResult(""), fmt.Errorf("alert violations query failed: %w", err)
@@ -564,7 +564,7 @@ func (t *GetInfrastructureMetricsTool) Handle(ctx framework.CallContext, args ma
 	if len(filters) > 0 {
 		where = " WHERE " + strings.Join(filters, " AND ")
 	}
-	nrql := fmt.Sprintf("%s FROM SystemSample SINCE %s%s LIMIT 50", selectClause, duration, where)
+	nrql := fmt.Sprintf("%s FROM SystemSample SINCE %s ago%s LIMIT 50", selectClause, duration, where)
 	results, err := t.client.executeNRQL(ctx, aid, nrql)
 	if err != nil {
 		return framework.TextResult(""), fmt.Errorf("infrastructure metrics query failed: %w", err)
@@ -612,11 +612,9 @@ func (t *ListDashboardsTool) Handle(ctx framework.CallContext, args map[string]i
 		entitySearch(queryBuilder: {type: DASHBOARD}) {
 		  results {
 			entities {
-			  ... on DashboardEntityOutline {
-				guid
-				name
-				description
-			  }
+			  guid
+			  name
+			  description
 			}
 		  }
 		}
