@@ -2,6 +2,9 @@ package newrelic
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -67,12 +70,12 @@ func TestWriteToolsEnabled(t *testing.T) {
 		t.Fatalf("Expected no error when executing write tool with writeEnabled=true, got: %v", err)
 	}
 
-	if result.Content[0].Text == "" {
+	if result.RawText == "" {
 		t.Error("Expected non-empty result")
 	}
 
-	if !contains(result.Content[0].Text, "Acknowledged") {
-		t.Errorf("Expected result to contain 'Acknowledged', got: %s", result.Content[0].Text)
+	if !contains(result.RawText, "Acknowledged") {
+		t.Errorf("Expected result to contain 'Acknowledged', got: %s", result.RawText)
 	}
 }
 
@@ -114,8 +117,8 @@ func TestCreateAlertConditionWriteEnabled(t *testing.T) {
 		t.Fatalf("Expected no error when executing create_alert_condition with writeEnabled=true, got: %v", err)
 	}
 
-	if !contains(result.Content[0].Text, "Created alert condition") {
-		t.Errorf("Expected result to contain 'Created alert condition', got: %s", result.Content[0].Text)
+	if !contains(result.RawText, "Created alert condition") {
+		t.Errorf("Expected result to contain 'Created alert condition', got: %s", result.RawText)
 	}
 }
 
@@ -155,24 +158,39 @@ func TestAddDashboardWidgetWriteEnabled(t *testing.T) {
 		t.Fatalf("Expected no error when executing add_dashboard_widget with writeEnabled=true, got: %v", err)
 	}
 
-	if !contains(result.Content[0].Text, "Added widget") {
-		t.Errorf("Expected result to contain 'Added widget', got: %s", result.Content[0].Text)
+	if !contains(result.RawText, "Added widget") {
+		t.Errorf("Expected result to contain 'Added widget', got: %s", result.RawText)
 	}
 }
 
 func TestReadToolsStillWorkWithWriteDisabled(t *testing.T) {
-	server := NewServer("test-key") // writeEnabled defaults to false
+	mockNR := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"data": map[string]interface{}{
+				"actor": map[string]interface{}{
+					"account": map[string]interface{}{
+						"apm": map[string]interface{}{
+							"results": []interface{}{},
+						},
+					},
+				},
+			},
+		})
+	}))
+	defer mockNR.Close()
+
+	server := NewServerWithEndpoint("test-key", mockNR.URL)
 
 	ctx := context.Background()
 
-	// Read tools should still work even when write tools are disabled
 	result, err := server.ExecuteTool(ctx, "list_applications", map[string]interface{}{})
 
 	if err != nil {
 		t.Fatalf("Read tools should work even when write tools are disabled, got error: %v", err)
 	}
 
-	if result.Content[0].Text == "" {
+	if result.RawText == "" {
 		t.Error("Expected non-empty result from read tool")
 	}
 }

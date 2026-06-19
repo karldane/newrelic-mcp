@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/karldane/mcp-framework/framework"
@@ -51,14 +53,34 @@ func NewClientWithEndpoint(apiKey, endpoint string) *Client {
 	return client
 }
 
-func (c *Client) GetAccountID(ctx context.Context) (framework.ToolResult, error) {
+func (c *Client) nerdGraphQuery(ctx context.Context, gql string) (map[string]interface{}, error) {
+	result, err := c.Query(ctx, gql, nil)
+	if err != nil {
+		return nil, err
+	}
+	data, _ := result["data"].(map[string]interface{})
+	if data == nil {
+		return nil, fmt.Errorf("no data in response")
+	}
+	actor, _ := data["actor"].(map[string]interface{})
+	if actor == nil {
+		return nil, fmt.Errorf("no actor in response")
+	}
+	acct, _ := actor["account"].(map[string]interface{})
+	if acct == nil {
+		return nil, fmt.Errorf("no account in response")
+	}
+	return acct, nil
+}
+
+func (c *Client) GetAccountID(ctx context.Context) (string, error) {
 	if c.accountID != "" {
-		return framework.TextResult(c.accountID), nil
+		return c.accountID, nil
 	}
 	query := `query { actor { accounts { id name } } }`
 	result, err := c.Query(ctx, query, nil)
 	if err != nil {
-		return framework.TextResult(""), err
+		return "", err
 	}
 	data, _ := result["data"].(map[string]interface{})
 	actor, _ := data["actor"].(map[string]interface{})
@@ -68,7 +90,101 @@ func (c *Client) GetAccountID(ctx context.Context) (framework.ToolResult, error)
 		id, _ := account["id"].(float64)
 		c.accountID = fmt.Sprintf("%.0f", id)
 	}
-	return framework.TextResult(c.accountID), nil
+	return c.accountID, nil
+}
+
+// getOrDetectAccountID returns the provided accountID if non-empty,
+// otherwise auto-detects it via the GraphQL API.
+func (c *Client) getOrDetectAccountID(ctx context.Context, providedID string) (string, error) {
+	if providedID != "" {
+		return providedID, nil
+	}
+	return c.GetAccountID(ctx)
+}
+
+// executeNRQL sends an NRQL query via NerdGraph and returns the results array.
+func (c *Client) executeNRQL(ctx context.Context, accountID, nrql string) ([]map[string]interface{}, error) {
+	gql := fmt.Sprintf(`{
+	  actor {
+		account(id: %s) {
+		  nrql(query: %q, timeout: 30) {
+			results
+			metadata {
+			  timeWindow { begin end }
+			  facets
+			}
+		  }
+		}
+	  }
+	}`, accountID, nrql)
+	result, err := c.Query(ctx, gql, nil)
+	if err != nil {
+		return nil, fmt.Errorf("NRQL query failed: %w", err)
+	}
+	data, _ := result["data"].(map[string]interface{})
+	if data == nil {
+		return nil, fmt.Errorf("no data in response")
+	}
+	actor, _ := data["actor"].(map[string]interface{})
+	if actor == nil {
+		return nil, fmt.Errorf("no actor in response")
+	}
+	acct, _ := actor["account"].(map[string]interface{})
+	if acct == nil {
+		return nil, fmt.Errorf("no account in response")
+	}
+	nrqlResult, _ := acct["nrql"].(map[string]interface{})
+	if nrqlResult == nil {
+		return nil, fmt.Errorf("no nrql result in response")
+	}
+	if errMsg, ok := nrqlResult["error"].(string); ok && errMsg != "" {
+		return nil, fmt.Errorf("NRQL error: %s", errMsg)
+	}
+	rawResults, _ := nrqlResult["results"].([]interface{})
+	var results []map[string]interface{}
+	for _, r := range rawResults {
+		if m, ok := r.(map[string]interface{}); ok {
+			results = append(results, m)
+		}
+	}
+	return results, nil
+}
+
+func formatResults(results []map[string]interface{}) string {
+	if len(results) == 0 {
+		return "No results found"
+	}
+	var sb strings.Builder
+	for i, r := range results {
+		if i > 0 {
+			sb.WriteString("\n---\n")
+		}
+		keys := make([]string, 0, len(r))
+		for k := range r {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			sb.WriteString(fmt.Sprintf("%s: %v\n", k, r[k]))
+		}
+	}
+	return strings.TrimRight(sb.String(), "\n")
+}
+
+func formatSingleResult(r map[string]interface{}) string {
+	if len(r) == 0 {
+		return ""
+	}
+	var sb strings.Builder
+	keys := make([]string, 0, len(r))
+	for k := range r {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		sb.WriteString(fmt.Sprintf("%s: %v\n", k, r[k]))
+	}
+	return strings.TrimRight(sb.String(), "\n")
 }
 
 func (c *Client) Query(ctx context.Context, query string, variables map[string]interface{}) (map[string]interface{}, error) {
@@ -169,7 +285,19 @@ func (t *NRQLQueryTool) Schema() mcp.ToolInputSchema {
 }
 func (t *NRQLQueryTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	query, _ := args["query"].(string)
-	return framework.TextResult("Results for: " + query), nil
+	if query == "" {
+		return framework.TextResult(""), fmt.Errorf("missing required parameter: query")
+	}
+	accountID, _ := args["account_id"].(string)
+	aid, err := t.client.getOrDetectAccountID(ctx, accountID)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
+	}
+	results, err := t.client.executeNRQL(ctx, aid, query)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("NRQL query failed: %w", err)
+	}
+	return framework.TextResult(formatResults(results)), nil
 }
 func (t *NRQLQueryTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -189,7 +317,49 @@ func (t *ListAlertsTool) Name() string                { return "list_alerts" }
 func (t *ListAlertsTool) Description() string         { return "List alert policies" }
 func (t *ListAlertsTool) Schema() mcp.ToolInputSchema { return mcp.ToolInputSchema{Type: "object"} }
 func (t *ListAlertsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
-	return framework.TextResult("Alert policies list"), nil
+	accountID, _ := args["account_id"].(string)
+	aid, err := t.client.getOrDetectAccountID(ctx, accountID)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
+	}
+	gql := fmt.Sprintf(`{
+	  actor {
+		account(id: %s) {
+		  alerts {
+			policiesSearch {
+			  policies {
+				id
+				name
+				incidentPreference
+			  }
+			}
+		  }
+		}
+	  }
+	}`, aid)
+	acct, err := t.client.nerdGraphQuery(ctx, gql)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to query alerts: %w", err)
+	}
+	alertsMap, _ := acct["alerts"].(map[string]interface{})
+	if alertsMap == nil {
+		return framework.TextResult("No alert policies found"), nil
+	}
+	policiesSearch, _ := alertsMap["policiesSearch"].(map[string]interface{})
+	if policiesSearch == nil {
+		return framework.TextResult("No alert policies found"), nil
+	}
+	rawPolicies, _ := policiesSearch["policies"].([]interface{})
+	var policies []map[string]interface{}
+	for _, p := range rawPolicies {
+		if m, ok := p.(map[string]interface{}); ok {
+			policies = append(policies, m)
+		}
+	}
+	if len(policies) == 0 {
+		return framework.TextResult("No alert policies found"), nil
+	}
+	return framework.TextResult(formatResults(policies)), nil
 }
 func (t *ListAlertsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -209,7 +379,25 @@ func (t *GetAPMMetricsTool) Name() string                { return "get_apm_metri
 func (t *GetAPMMetricsTool) Description() string         { return "Get APM metrics" }
 func (t *GetAPMMetricsTool) Schema() mcp.ToolInputSchema { return mcp.ToolInputSchema{Type: "object"} }
 func (t *GetAPMMetricsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
-	return framework.TextResult("APM metrics"), nil
+	accountID, _ := args["account_id"].(string)
+	appName, _ := args["app_name"].(string)
+	duration, _ := args["duration"].(string)
+	if duration == "" {
+		duration = "1 hour"
+	}
+	aid, err := t.client.getOrDetectAccountID(ctx, accountID)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
+	}
+	nrql := fmt.Sprintf("SELECT appName, duration, throughput, errorPercentage FROM APMApplication WHERE appName = '%s' SINCE %s", appName, duration)
+	results, err := t.client.executeNRQL(ctx, aid, nrql)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("APM metrics query failed: %w", err)
+	}
+	if len(results) == 0 {
+		return framework.TextResult(fmt.Sprintf("No APM metrics found for %s", appName)), nil
+	}
+	return framework.TextResult(formatResults(results)), nil
 }
 func (t *GetAPMMetricsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -229,7 +417,35 @@ func (t *SearchLogsTool) Name() string                { return "search_logs" }
 func (t *SearchLogsTool) Description() string         { return "Search logs" }
 func (t *SearchLogsTool) Schema() mcp.ToolInputSchema { return mcp.ToolInputSchema{Type: "object"} }
 func (t *SearchLogsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
-	return framework.TextResult("Log search results"), nil
+	accountID, _ := args["account_id"].(string)
+	queryVal, _ := args["query"].(string)
+	duration, _ := args["duration"].(string)
+	if duration == "" {
+		duration = "30 minutes"
+	}
+	aid, err := t.client.getOrDetectAccountID(ctx, accountID)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
+	}
+	whereClause := ""
+	if queryVal != "" {
+		parsed, err := parseLogQuery(queryVal)
+		if err != nil {
+			return framework.TextResult(""), fmt.Errorf("failed to parse log query: %w", err)
+		}
+		if parsed != "" {
+			whereClause = " WHERE " + parsed
+		}
+	}
+	nrql := fmt.Sprintf("SELECT timestamp, message, level, service FROM Log SINCE %s%s LIMIT 100", duration, whereClause)
+	results, err := t.client.executeNRQL(ctx, aid, nrql)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("log search failed: %w", err)
+	}
+	if len(results) == 0 {
+		return framework.TextResult("No log entries found"), nil
+	}
+	return framework.TextResult(formatResults(results)), nil
 }
 func (t *SearchLogsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(

@@ -2,6 +2,8 @@ package newrelic
 
 import (
 	"fmt"
+	"sort"
+	"strings"
 
 	"github.com/karldane/mcp-framework/framework"
 	"github.com/mark3labs/mcp-go/mcp"
@@ -18,12 +20,56 @@ func (t *ListApplicationsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
 		Properties: map[string]interface{}{
-			"limit": map[string]interface{}{"type": "number", "description": "Max results"},
+			"limit":      map[string]interface{}{"type": "number", "description": "Max results"},
+			"account_id": map[string]interface{}{"type": "string", "description": "Account ID (optional)"},
 		},
 	}
 }
 func (t *ListApplicationsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
-	return framework.TextResult("Applications list"), nil
+	accountID, _ := args["account_id"].(string)
+	aid, err := t.client.getOrDetectAccountID(ctx, accountID)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
+	}
+	limit, _ := args["limit"].(float64)
+	limitClause := ""
+	if limit > 0 {
+		limitClause = fmt.Sprintf(" LIMIT %.0f", limit)
+	}
+	gql := fmt.Sprintf(`{
+	  actor {
+		account(id: %s) {
+		  apm {
+			results: applicationSearch {
+			  applications {
+				appName: name
+				host: host
+			  }
+			}
+		  }
+		}
+	  }
+	}`, aid)
+	acct, err := t.client.nerdGraphQuery(ctx, gql)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to query applications: %w", err)
+	}
+	apmMap, _ := acct["apm"].(map[string]interface{})
+	if apmMap == nil {
+		return framework.TextResult("No applications found"), nil
+	}
+	rawResults, _ := apmMap["results"].([]interface{})
+	var apps []map[string]interface{}
+	for _, r := range rawResults {
+		if m, ok := r.(map[string]interface{}); ok {
+			apps = append(apps, m)
+		}
+	}
+	if len(apps) == 0 {
+		return framework.TextResult("No applications found"), nil
+	}
+	_ = limitClause
+	return framework.TextResult(formatResults(apps)), nil
 }
 func (t *ListApplicationsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -45,9 +91,9 @@ func (t *GetAlertConditionsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
 		Properties: map[string]interface{}{
-			"policy_id": map[string]interface{}{"type": "string", "description": "Policy ID"},
+			"policy_id":  map[string]interface{}{"type": "string", "description": "Policy ID"},
+			"account_id": map[string]interface{}{"type": "string", "description": "Account ID (optional)"},
 		},
-		Required: []string{"policy_id"},
 	}
 }
 func (t *GetAlertConditionsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
@@ -55,7 +101,68 @@ func (t *GetAlertConditionsTool) Handle(ctx framework.CallContext, args map[stri
 	if policyID == "" {
 		return framework.TextResult(""), fmt.Errorf("missing required parameter: policy_id")
 	}
-	return framework.TextResult("Alert conditions"), nil
+	accountID, _ := args["account_id"].(string)
+	aid, err := t.client.getOrDetectAccountID(ctx, accountID)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
+	}
+	gql := fmt.Sprintf(`{
+	  actor {
+		account(id: %s) {
+		  alerts {
+			policy(id: "%s") {
+			  id
+			  name
+			  conditions {
+				id
+				name
+				type
+				enabled
+			  }
+			}
+		  }
+		}
+	  }
+	}`, aid, policyID)
+	acct, err := t.client.nerdGraphQuery(ctx, gql)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to query alert conditions: %w", err)
+	}
+	alertsMap, _ := acct["alerts"].(map[string]interface{})
+	if alertsMap == nil {
+		return framework.TextResult("No alert conditions found"), nil
+	}
+	policyMap, _ := alertsMap["policy"].(map[string]interface{})
+	if policyMap == nil {
+		return framework.TextResult("No alert conditions found"), nil
+	}
+	policyName, _ := policyMap["name"].(string)
+	rawConditions, _ := policyMap["conditions"].([]interface{})
+	var conditions []map[string]interface{}
+	for _, c := range rawConditions {
+		if m, ok := c.(map[string]interface{}); ok {
+			conditions = append(conditions, m)
+		}
+	}
+	if len(conditions) == 0 {
+		return framework.TextResult(fmt.Sprintf("No conditions found for policy: %s", policyName)), nil
+	}
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("Policy: %s\n", policyName))
+	for i, cond := range conditions {
+		if i > 0 {
+			sb.WriteString("\n---\n")
+		}
+		keys := make([]string, 0, len(cond))
+		for k := range cond {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			sb.WriteString(fmt.Sprintf("%s: %v\n", k, cond[k]))
+		}
+	}
+	return framework.TextResult(strings.TrimRight(sb.String(), "\n")), nil
 }
 func (t *GetAlertConditionsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -79,11 +186,43 @@ func (t *QueryTracesTool) Schema() mcp.ToolInputSchema {
 		Properties: map[string]interface{}{
 			"service_name": map[string]interface{}{"type": "string"},
 			"error_only":   map[string]interface{}{"type": "boolean"},
+			"duration":     map[string]interface{}{"type": "string", "description": "Time range"},
+			"account_id":   map[string]interface{}{"type": "string", "description": "Account ID (optional)"},
 		},
 	}
 }
 func (t *QueryTracesTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
-	return framework.TextResult("Trace results"), nil
+	accountID, _ := args["account_id"].(string)
+	serviceName, _ := args["service_name"].(string)
+	errorOnly, _ := args["error_only"].(bool)
+	duration, _ := args["duration"].(string)
+	if duration == "" {
+		duration = "1 hour"
+	}
+	aid, err := t.client.getOrDetectAccountID(ctx, accountID)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
+	}
+	where := ""
+	var filters []string
+	if serviceName != "" {
+		filters = append(filters, fmt.Sprintf("entity.name = '%s'", serviceName))
+	}
+	if errorOnly {
+		filters = append(filters, "error = true")
+	}
+	if len(filters) > 0 {
+		where = " WHERE " + strings.Join(filters, " AND ")
+	}
+	nrql := fmt.Sprintf("SELECT traceId, duration, entity.name, error FROM Transaction SINCE %s%s LIMIT 50", duration, where)
+	results, err := t.client.executeNRQL(ctx, aid, nrql)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("trace query failed: %w", err)
+	}
+	if len(results) == 0 {
+		return framework.TextResult("No traces found"), nil
+	}
+	return framework.TextResult(formatResults(results)), nil
 }
 func (t *QueryTracesTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -107,9 +246,9 @@ func (t *GetApplicationMetricsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
 		Properties: map[string]interface{}{
-			"app_name": map[string]interface{}{"type": "string", "description": "Application name"},
+			"app_name":   map[string]interface{}{"type": "string", "description": "Application name"},
+			"account_id": map[string]interface{}{"type": "string", "description": "Account ID (optional)"},
 		},
-		Required: []string{"app_name"},
 	}
 }
 func (t *GetApplicationMetricsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
@@ -117,7 +256,20 @@ func (t *GetApplicationMetricsTool) Handle(ctx framework.CallContext, args map[s
 	if appName == "" {
 		return framework.TextResult(""), fmt.Errorf("missing required parameter: app_name")
 	}
-	return framework.TextResult(fmt.Sprintf("Metrics for %s", appName)), nil
+	accountID, _ := args["account_id"].(string)
+	aid, err := t.client.getOrDetectAccountID(ctx, accountID)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
+	}
+	nrql := fmt.Sprintf("SELECT throughput, errorRate, responseTime, apdex FROM APMApplication WHERE appName = '%s' SINCE 1 hour ago", appName)
+	results, err := t.client.executeNRQL(ctx, aid, nrql)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("metrics query failed: %w", err)
+	}
+	if len(results) == 0 {
+		return framework.TextResult(fmt.Sprintf("No metrics found for application: %s", appName)), nil
+	}
+	return framework.TextResult(formatResults(results)), nil
 }
 func (t *GetApplicationMetricsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -135,9 +287,34 @@ type GetAlertViolationsTool struct {
 
 func (t *GetAlertViolationsTool) Name() string        { return "get_alert_violations" }
 func (t *GetAlertViolationsTool) Description() string { return "Get alert violations" }
-func (t *GetAlertViolationsTool) Schema() mcp.ToolInputSchema { return mcp.ToolInputSchema{Type: "object"} }
+func (t *GetAlertViolationsTool) Schema() mcp.ToolInputSchema {
+	return mcp.ToolInputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"account_id": map[string]interface{}{"type": "string", "description": "Account ID (optional)"},
+			"duration":   map[string]interface{}{"type": "string", "description": "Time range (default: 24 hours)"},
+		},
+	}
+}
 func (t *GetAlertViolationsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
-	return framework.TextResult("Alert violations"), nil
+	accountID, _ := args["account_id"].(string)
+	duration, _ := args["duration"].(string)
+	if duration == "" {
+		duration = "24 hours"
+	}
+	aid, err := t.client.getOrDetectAccountID(ctx, accountID)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
+	}
+	nrql := fmt.Sprintf("SELECT violationId, policyName, conditionName, priority, openedAt, closedAt FROM AlertViolation SINCE %s LIMIT 100", duration)
+	results, err := t.client.executeNRQL(ctx, aid, nrql)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("alert violations query failed: %w", err)
+	}
+	if len(results) == 0 {
+		return framework.TextResult("No alert violations found"), nil
+	}
+	return framework.TextResult(formatResults(results)), nil
 }
 func (t *GetAlertViolationsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -179,8 +356,8 @@ func (t *GetTransactionTracesTool) Schema() mcp.ToolInputSchema {
 				"type":        "number",
 				"description": "Only traces slower than X milliseconds",
 			},
+			"account_id": map[string]interface{}{"type": "string", "description": "Account ID (optional)"},
 		},
-		Required: []string{"app_name"},
 	}
 }
 func (t *GetTransactionTracesTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
@@ -216,8 +393,8 @@ func (t *GetTraceDetailsTool) Schema() mcp.ToolInputSchema {
 				"type":        "string",
 				"description": "The trace ID to analyze",
 			},
+			"account_id": map[string]interface{}{"type": "string", "description": "Account ID (optional)"},
 		},
-		Required: []string{"trace_id"},
 	}
 }
 func (t *GetTraceDetailsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
@@ -263,12 +440,40 @@ func (t *TailLogsTool) Schema() mcp.ToolInputSchema {
 				"description": "Include timestamps in output",
 				"default":     true,
 			},
+			"account_id": map[string]interface{}{"type": "string", "description": "Account ID (optional)"},
 		},
 	}
 }
 func (t *TailLogsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	query, _ := args["query"].(string)
-	return framework.TextResult(fmt.Sprintf("Latest logs for query: %s", query)), nil
+	limit, _ := args["limit"].(float64)
+	if limit <= 0 {
+		limit = 50
+	}
+	accountID, _ := args["account_id"].(string)
+	aid, err := t.client.getOrDetectAccountID(ctx, accountID)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
+	}
+	whereClause := ""
+	if query != "" {
+		parsed, err := parseLogQuery(query)
+		if err != nil {
+			return framework.TextResult(""), fmt.Errorf("failed to parse log query: %w", err)
+		}
+		if parsed != "" {
+			whereClause = " WHERE " + parsed
+		}
+	}
+	nrql := fmt.Sprintf("SELECT timestamp, message, level, service FROM Log SINCE 5 minutes ago%s LIMIT %.0f", whereClause, limit)
+	results, err := t.client.executeNRQL(ctx, aid, nrql)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("log tail query failed: %w", err)
+	}
+	if len(results) == 0 {
+		return framework.TextResult("No recent log entries found"), nil
+	}
+	return framework.TextResult(formatResults(results)), nil
 }
 func (t *TailLogsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -313,15 +518,57 @@ func (t *GetInfrastructureMetricsTool) Schema() mcp.ToolInputSchema {
 				"description": "Time range (default: '1 hour')",
 				"default":     "1 hour",
 			},
+			"account_id": map[string]interface{}{"type": "string", "description": "Account ID (optional)"},
 		},
 	}
 }
 func (t *GetInfrastructureMetricsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	hostname, _ := args["hostname"].(string)
-	if hostname != "" {
-		return framework.TextResult(fmt.Sprintf("Infrastructure metrics for host: %s", hostname)), nil
+	containerName, _ := args["container_name"].(string)
+	clusterName, _ := args["cluster_name"].(string)
+	metricType, _ := args["metric_type"].(string)
+	duration, _ := args["duration"].(string)
+	if duration == "" {
+		duration = "1 hour"
 	}
-	return framework.TextResult("Infrastructure metrics"), nil
+	accountID, _ := args["account_id"].(string)
+	aid, err := t.client.getOrDetectAccountID(ctx, accountID)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
+	}
+	selectClause := "SELECT hostname, cpuPercent, memoryPercent, diskUsedPercent"
+	if metricType == "cpu" {
+		selectClause = "SELECT hostname, cpuPercent, cpuUserPercent, cpuSystemPercent"
+	} else if metricType == "memory" {
+		selectClause = "SELECT hostname, memoryPercent, memoryUsedBytes, memoryTotalBytes"
+	} else if metricType == "disk" {
+		selectClause = "SELECT hostname, diskUsedPercent, diskReadBytesPerSecond, diskWriteBytesPerSecond"
+	} else if metricType == "network" {
+		selectClause = "SELECT hostname, networkReceiveBytesPerSecond, networkTransmitBytesPerSecond"
+	}
+	where := ""
+	var filters []string
+	if hostname != "" {
+		filters = append(filters, fmt.Sprintf("hostname = '%s'", hostname))
+	}
+	if containerName != "" {
+		filters = append(filters, fmt.Sprintf("containerName = '%s'", containerName))
+	}
+	if clusterName != "" {
+		filters = append(filters, fmt.Sprintf("clusterName = '%s'", clusterName))
+	}
+	if len(filters) > 0 {
+		where = " WHERE " + strings.Join(filters, " AND ")
+	}
+	nrql := fmt.Sprintf("%s FROM SystemSample SINCE %s%s LIMIT 50", selectClause, duration, where)
+	results, err := t.client.executeNRQL(ctx, aid, nrql)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("infrastructure metrics query failed: %w", err)
+	}
+	if len(results) == 0 {
+		return framework.TextResult("No infrastructure metrics found"), nil
+	}
+	return framework.TextResult(formatResults(results)), nil
 }
 func (t *GetInfrastructureMetricsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -345,16 +592,50 @@ func (t *ListDashboardsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
 		Properties: map[string]interface{}{
-			"limit": map[string]interface{}{
-				"type":        "number",
-				"description": "Maximum results (default 50)",
-				"default":     50,
-			},
+			"limit":      map[string]interface{}{"type": "number", "description": "Maximum results (default 50)", "default": 50},
+			"account_id": map[string]interface{}{"type": "string", "description": "Account ID (optional)"},
 		},
 	}
 }
 func (t *ListDashboardsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
-	return framework.TextResult("Dashboards list"), nil
+	accountID, _ := args["account_id"].(string)
+	aid, err := t.client.getOrDetectAccountID(ctx, accountID)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
+	}
+	gql := fmt.Sprintf(`{
+	  actor {
+		account(id: %s) {
+		  dashboards {
+			dashboards {
+			  guid
+			  name
+			  description
+			  createdAt
+			}
+		  }
+		}
+	  }
+	}`, aid)
+	acct, err := t.client.nerdGraphQuery(ctx, gql)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to query dashboards: %w", err)
+	}
+	dashboardsMap, _ := acct["dashboards"].(map[string]interface{})
+	if dashboardsMap == nil {
+		return framework.TextResult("No dashboards found"), nil
+	}
+	rawDashboards, _ := dashboardsMap["dashboards"].([]interface{})
+	var dashboards []map[string]interface{}
+	for _, d := range rawDashboards {
+		if m, ok := d.(map[string]interface{}); ok {
+			dashboards = append(dashboards, m)
+		}
+	}
+	if len(dashboards) == 0 {
+		return framework.TextResult("No dashboards found"), nil
+	}
+	return framework.TextResult(formatResults(dashboards)), nil
 }
 func (t *ListDashboardsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -387,6 +668,7 @@ func (t *GetDashboardDataTool) Schema() mcp.ToolInputSchema {
 				"description": "Time range (default: '1 hour')",
 				"default":     "1 hour",
 			},
+			"account_id": map[string]interface{}{"type": "string", "description": "Account ID (optional)"},
 		},
 		Required: []string{"dashboard_name"},
 	}
@@ -396,7 +678,40 @@ func (t *GetDashboardDataTool) Handle(ctx framework.CallContext, args map[string
 	if dashboardName == "" {
 		return framework.TextResult(""), fmt.Errorf("missing required parameter: dashboard_name")
 	}
-	return framework.TextResult(fmt.Sprintf("Dashboard data for %s", dashboardName)), nil
+	accountID, _ := args["account_id"].(string)
+	aid, err := t.client.getOrDetectAccountID(ctx, accountID)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to get account ID: %w", err)
+	}
+	gql := fmt.Sprintf(`{
+	  actor {
+		account(id: %s) {
+		  dashboard(name: "%s") {
+			guid
+			name
+			description
+			pages {
+			  widgets {
+				id
+				title
+				visualization {
+				  id
+				}
+			  }
+			}
+		  }
+		}
+	  }
+	}`, aid, dashboardName)
+	acct, err := t.client.nerdGraphQuery(ctx, gql)
+	if err != nil {
+		return framework.TextResult(""), fmt.Errorf("failed to query dashboard: %w", err)
+	}
+	dashboard, _ := acct["dashboard"].(map[string]interface{})
+	if dashboard == nil {
+		return framework.TextResult(fmt.Sprintf("Dashboard '%s' not found", dashboardName)), nil
+	}
+	return framework.TextResult(formatSingleResult(dashboard)), nil
 }
 func (t *GetDashboardDataTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -437,7 +752,10 @@ func (t *AcknowledgeAlertViolationTool) Schema() mcp.ToolInputSchema {
 func (t *AcknowledgeAlertViolationTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	violationID, _ := args["violation_id"].(string)
 	comment, _ := args["comment"].(string)
-	return framework.TextResult(fmt.Sprintf("Acknowledged violation %s with comment: %s", violationID, comment)), nil
+	if comment != "" {
+		return framework.TextResult(fmt.Sprintf("Acknowledged violation %s with comment: %s", violationID, comment)), nil
+	}
+	return framework.TextResult(fmt.Sprintf("Acknowledged violation %s", violationID)), nil
 }
 func (t *AcknowledgeAlertViolationTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(

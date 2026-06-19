@@ -47,16 +47,16 @@ func TestListApplicationsTool(t *testing.T) {
 		t.Fatalf("List applications failed: %v", err)
 	}
 
-	if result.Content[0].Text == "" {
+	if result.RawText == "" {
 		t.Error("Expected non-empty result")
 	}
 
-	if !contains(result.Content[0].Text, "MyApp") {
-		t.Errorf("Expected result to contain 'MyApp', got: %s", result.Content[0].Text)
+	if !contains(result.RawText, "MyApp") {
+		t.Errorf("Expected result to contain 'MyApp', got: %s", result.RawText)
 	}
 
-	if !contains(result.Content[0].Text, "AnotherApp") {
-		t.Errorf("Expected result to contain 'AnotherApp', got: %s", result.Content[0].Text)
+	if !contains(result.RawText, "AnotherApp") {
+		t.Errorf("Expected result to contain 'AnotherApp', got: %s", result.RawText)
 	}
 }
 
@@ -90,8 +90,8 @@ func TestListApplicationsToolNoResults(t *testing.T) {
 		t.Fatalf("List applications failed: %v", err)
 	}
 
-	if !contains(result.Content[0].Text, "No applications") {
-		t.Errorf("Expected result to indicate no applications, got: %s", result.Content[0].Text)
+	if !contains(result.RawText, "No applications") {
+		t.Errorf("Expected result to indicate no applications, got: %s", result.RawText)
 	}
 }
 
@@ -148,16 +148,16 @@ func TestGetAlertConditionsTool(t *testing.T) {
 		t.Fatalf("Get alert conditions failed: %v", err)
 	}
 
-	if result.Content[0].Text == "" {
+	if result.RawText == "" {
 		t.Error("Expected non-empty result")
 	}
 
-	if !contains(result.Content[0].Text, "Test Policy") {
-		t.Errorf("Expected result to contain 'Test Policy', got: %s", result.Content[0].Text)
+	if !contains(result.RawText, "Test Policy") {
+		t.Errorf("Expected result to contain 'Test Policy', got: %s", result.RawText)
 	}
 
-	if !contains(result.Content[0].Text, "High Error Rate") {
-		t.Errorf("Expected result to contain 'High Error Rate', got: %s", result.Content[0].Text)
+	if !contains(result.RawText, "High Error Rate") {
+		t.Errorf("Expected result to contain 'High Error Rate', got: %s", result.RawText)
 	}
 }
 
@@ -173,7 +173,7 @@ func TestGetAlertConditionsToolMissingPolicyID(t *testing.T) {
 		t.Fatal("Expected error for missing policy_id")
 	}
 
-	if err.Error() != "missing required parameter: policy_id" {
+	if err.Error() != "tool get_alert_conditions: missing required parameter: policy_id" {
 		t.Errorf("Unexpected error message: %v", err)
 	}
 }
@@ -223,12 +223,12 @@ func TestQueryTracesTool(t *testing.T) {
 		t.Fatalf("Query traces failed: %v", err)
 	}
 
-	if result.Content[0].Text == "" {
+	if result.RawText == "" {
 		t.Error("Expected non-empty result")
 	}
 
-	if !contains(result.Content[0].Text, "abc123") {
-		t.Errorf("Expected result to contain trace ID 'abc123', got: %s", result.Content[0].Text)
+	if !contains(result.RawText, "abc123") {
+		t.Errorf("Expected result to contain trace ID 'abc123', got: %s", result.RawText)
 	}
 }
 
@@ -271,12 +271,12 @@ func TestGetApplicationMetricsTool(t *testing.T) {
 		t.Fatalf("Get application metrics failed: %v", err)
 	}
 
-	if result.Content[0].Text == "" {
+	if result.RawText == "" {
 		t.Error("Expected non-empty result")
 	}
 
-	if !contains(result.Content[0].Text, "throughput") {
-		t.Errorf("Expected result to contain 'throughput', got: %s", result.Content[0].Text)
+	if !contains(result.RawText, "throughput") {
+		t.Errorf("Expected result to contain 'throughput', got: %s", result.RawText)
 	}
 }
 
@@ -294,12 +294,12 @@ func TestGetTransactionTracesTool(t *testing.T) {
 		t.Fatalf("Get transaction traces failed: %v", err)
 	}
 
-	if result.Content[0].Text == "" {
+	if result.RawText == "" {
 		t.Error("Expected non-empty result")
 	}
 
-	if !contains(result.Content[0].Text, "MyApp") {
-		t.Errorf("Expected result to contain 'MyApp', got: %s", result.Content[0].Text)
+	if !contains(result.RawText, "MyApp") {
+		t.Errorf("Expected result to contain 'MyApp', got: %s", result.RawText)
 	}
 }
 
@@ -315,7 +315,7 @@ func TestGetTransactionTracesToolMissingAppName(t *testing.T) {
 		t.Fatal("Expected error for missing app_name")
 	}
 
-	if err.Error() != "missing required parameter: app_name" {
+	if err.Error() != "tool get_transaction_traces: missing required parameter: app_name" {
 		t.Errorf("Unexpected error message: %v", err)
 	}
 }
@@ -333,12 +333,12 @@ func TestGetTraceDetailsTool(t *testing.T) {
 		t.Fatalf("Get trace details failed: %v", err)
 	}
 
-	if result.Content[0].Text == "" {
+	if result.RawText == "" {
 		t.Error("Expected non-empty result")
 	}
 
-	if !contains(result.Content[0].Text, "abc123def456") {
-		t.Errorf("Expected result to contain trace ID, got: %s", result.Content[0].Text)
+	if !contains(result.RawText, "abc123def456") {
+		t.Errorf("Expected result to contain trace ID, got: %s", result.RawText)
 	}
 }
 
@@ -354,7 +354,7 @@ func TestGetTraceDetailsToolMissingTraceID(t *testing.T) {
 		t.Fatal("Expected error for missing trace_id")
 	}
 
-	if err.Error() != "missing required parameter: trace_id" {
+	if err.Error() != "tool get_trace_details: missing required parameter: trace_id" {
 		t.Errorf("Unexpected error message: %v", err)
 	}
 }
