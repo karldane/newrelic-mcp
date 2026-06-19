@@ -114,10 +114,8 @@ func (t *GetAlertConditionsTool) Handle(ctx framework.CallContext, args map[stri
 	  actor {
 		account(id: %s) {
 		  alerts {
-			policy(id: "%s") {
-			  id
-			  name
-			  conditions {
+			alertConditionsSearch(filter: {policyId: "%s"}) {
+			  alertConditions {
 				id
 				name
 				type
@@ -136,12 +134,11 @@ func (t *GetAlertConditionsTool) Handle(ctx framework.CallContext, args map[stri
 	if alertsMap == nil {
 		return framework.TextResult("No alert conditions found"), nil
 	}
-	policyMap, _ := alertsMap["policy"].(map[string]interface{})
-	if policyMap == nil {
+	conditionsSearch, _ := alertsMap["alertConditionsSearch"].(map[string]interface{})
+	if conditionsSearch == nil {
 		return framework.TextResult("No alert conditions found"), nil
 	}
-	policyName, _ := policyMap["name"].(string)
-	rawConditions, _ := policyMap["conditions"].([]interface{})
+	rawConditions, _ := conditionsSearch["alertConditions"].([]interface{})
 	var conditions []map[string]interface{}
 	for _, c := range rawConditions {
 		if m, ok := c.(map[string]interface{}); ok {
@@ -149,10 +146,9 @@ func (t *GetAlertConditionsTool) Handle(ctx framework.CallContext, args map[stri
 		}
 	}
 	if len(conditions) == 0 {
-		return framework.TextResult(fmt.Sprintf("No conditions found for policy: %s", policyName)), nil
+		return framework.TextResult("No conditions found for this policy"), nil
 	}
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("Policy: %s\n", policyName))
 	for i, cond := range conditions {
 		if i > 0 {
 			sb.WriteString("\n---\n")
@@ -614,7 +610,6 @@ func (t *ListDashboardsTool) Handle(ctx framework.CallContext, args map[string]i
 			entities {
 			  guid
 			  name
-			  description
 			}
 		  }
 		}

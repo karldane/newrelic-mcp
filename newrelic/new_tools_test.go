@@ -104,26 +104,13 @@ func TestGetAlertConditionsTool(t *testing.T) {
 				"actor": map[string]interface{}{
 					"account": map[string]interface{}{
 						"alerts": map[string]interface{}{
-							"policy": map[string]interface{}{
-								"id":   "12345",
-								"name": "Test Policy",
-								"conditions": []map[string]interface{}{
+							"alertConditionsSearch": map[string]interface{}{
+								"alertConditions": []map[string]interface{}{
 									{
 										"id":      "cond1",
 										"name":    "High Error Rate",
 										"type":    "NRQL",
 										"enabled": true,
-										"nrql": map[string]interface{}{
-											"query": "SELECT count(*) FROM TransactionError",
-										},
-										"terms": []map[string]interface{}{
-											{
-												"threshold": 10.0,
-												"duration":  5,
-												"operator":  "ABOVE",
-												"priority":  "CRITICAL",
-											},
-										},
 									},
 								},
 							},
@@ -152,10 +139,6 @@ func TestGetAlertConditionsTool(t *testing.T) {
 
 	if result.RawText == "" {
 		t.Error("Expected non-empty result")
-	}
-
-	if !contains(result.RawText, "Test Policy") {
-		t.Errorf("Expected result to contain 'Test Policy', got: %s", result.RawText)
 	}
 
 	if !contains(result.RawText, "High Error Rate") {
