@@ -86,3 +86,47 @@ func (t *CrossAccountNRQLTool) EnforcerProfile(args map[string]interface{}) *fra
 		framework.WithPII(true),
 	)
 }
+
+func (t *CrossAccountNRQLTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"results": map[string]interface{}{
+				"type":        "array",
+				"description": "Array of result objects matching the NRQL query",
+				"items": map[string]interface{}{
+					"type":        "object",
+					"description": "Individual result row with dynamic fields based on query",
+				},
+			},
+			"metadata": map[string]interface{}{
+				"type":        "object",
+				"description": "Query metadata including time window and facets",
+				"properties": map[string]interface{}{
+					"timeWindow": map[string]interface{}{
+						"type":        "object",
+						"description": "Time range of the query",
+						"properties": map[string]interface{}{
+							"begin": map[string]interface{}{
+								"type":        "number",
+								"description": "Start timestamp in milliseconds",
+							},
+							"end": map[string]interface{}{
+								"type":        "number",
+								"description": "End timestamp in milliseconds",
+							},
+						},
+					},
+					"facets": map[string]interface{}{
+						"type":        "array",
+						"description": "List of facet fields used in the query",
+						"items": map[string]interface{}{
+							"type": "string",
+						},
+					},
+				},
+			},
+		},
+	}
+	return &schema
+}

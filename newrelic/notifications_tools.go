@@ -76,6 +76,26 @@ func (t *ListNotificationChannelsTool) EnforcerProfile(args map[string]interface
 		framework.WithPII(false),
 	)
 }
+func (t *ListNotificationChannelsTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"entities": map[string]interface{}{
+				"type":        "array",
+				"description": "List of notification channels",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"id":   map[string]interface{}{"type": "string", "description": "Channel ID"},
+						"name": map[string]interface{}{"type": "string", "description": "Channel name"},
+						"type": map[string]interface{}{"type": "string", "description": "Channel type (e.g., SLACK, EMAIL)"},
+					},
+				},
+			},
+			"totalCount": map[string]interface{}{"type": "integer", "description": "Total number of notification channels"},
+		},
+	}
+}
 
 type ListDestinationsTool struct {
 	framework.BaseTool
@@ -146,6 +166,27 @@ func (t *ListDestinationsTool) EnforcerProfile(args map[string]interface{}) *fra
 		framework.WithResourceCost(2),
 		framework.WithPII(false),
 	)
+}
+func (t *ListDestinationsTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"entities": map[string]interface{}{
+				"type":        "array",
+				"description": "List of notification destinations",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"id":     map[string]interface{}{"type": "string", "description": "Destination ID"},
+						"name":   map[string]interface{}{"type": "string", "description": "Destination name"},
+						"type":   map[string]interface{}{"type": "string", "description": "Destination type (e.g., SLACK, EMAIL)"},
+						"status": map[string]interface{}{"type": "string", "description": "Destination status"},
+					},
+				},
+			},
+			"totalCount": map[string]interface{}{"type": "integer", "description": "Total number of destinations"},
+		},
+	}
 }
 
 type CreateSlackChannelTool struct {
@@ -237,6 +278,32 @@ func (t *CreateSlackChannelTool) EnforcerProfile(args map[string]interface{}) *f
 		framework.WithIdempotent(false),
 	)
 }
+func (t *CreateSlackChannelTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"channel": map[string]interface{}{
+				"type":        "object",
+				"description": "Created Slack channel",
+				"properties": map[string]interface{}{
+					"id":   map[string]interface{}{"type": "string", "description": "Channel ID"},
+					"name": map[string]interface{}{"type": "string", "description": "Channel name"},
+				},
+			},
+			"errors": map[string]interface{}{
+				"type":        "array",
+				"description": "List of errors if creation failed",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"type":        map[string]interface{}{"type": "string", "description": "Error type"},
+						"description": map[string]interface{}{"type": "string", "description": "Error description"},
+					},
+				},
+			},
+		},
+	}
+}
 
 type CreateEmailChannelTool struct {
 	framework.BaseTool
@@ -322,6 +389,32 @@ func (t *CreateEmailChannelTool) EnforcerProfile(args map[string]interface{}) *f
 		framework.WithIdempotent(false),
 	)
 }
+func (t *CreateEmailChannelTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"channel": map[string]interface{}{
+				"type":        "object",
+				"description": "Created email channel",
+				"properties": map[string]interface{}{
+					"id":   map[string]interface{}{"type": "string", "description": "Channel ID"},
+					"name": map[string]interface{}{"type": "string", "description": "Channel name"},
+				},
+			},
+			"errors": map[string]interface{}{
+				"type":        "array",
+				"description": "List of errors if creation failed",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"type":        map[string]interface{}{"type": "string", "description": "Error type"},
+						"description": map[string]interface{}{"type": "string", "description": "Error description"},
+					},
+				},
+			},
+		},
+	}
+}
 
 type DeleteNotificationChannelTool struct {
 	framework.BaseTool
@@ -390,5 +483,30 @@ func (t *DeleteNotificationChannelTool) EnforcerProfile(args map[string]interfac
 		framework.WithPII(false),
 		framework.WithIdempotent(true),
 	)
+}
+func (t *DeleteNotificationChannelTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"ids": map[string]interface{}{
+				"type":        "array",
+				"description": "List of deleted channel IDs",
+				"items": map[string]interface{}{
+					"type": "string",
+				},
+			},
+			"errors": map[string]interface{}{
+				"type":        "array",
+				"description": "List of errors if deletion failed",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"type":        map[string]interface{}{"type": "string", "description": "Error type"},
+						"description": map[string]interface{}{"type": "string", "description": "Error description"},
+					},
+				},
+			},
+		},
+	}
 }
 

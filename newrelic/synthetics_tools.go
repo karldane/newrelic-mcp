@@ -83,6 +83,26 @@ func (t *ListSyntheticMonitorsTool) EnforcerProfile(args map[string]interface{})
 		framework.WithPII(false),
 	)
 }
+func (t *ListSyntheticMonitorsTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"entities": map[string]interface{}{
+				"type":        "array",
+				"description": "List of synthetic monitors",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"guid":        map[string]interface{}{"type": "string", "description": "Unique identifier for the monitor"},
+						"name":        map[string]interface{}{"type": "string", "description": "Monitor name"},
+						"accountId":   map[string]interface{}{"type": "string", "description": "Account ID the monitor belongs to"},
+						"monitorType": map[string]interface{}{"type": "string", "description": "Type of monitor (e.g., SIMPLE, BROWSER, SCRIPT_API, SCRIPT_BROWSER)"},
+					},
+				},
+			},
+		},
+	}
+}
 
 type GetSyntheticMonitorTool struct {
 	framework.BaseTool
@@ -140,6 +160,17 @@ func (t *GetSyntheticMonitorTool) EnforcerProfile(args map[string]interface{}) *
 		framework.WithResourceCost(2),
 		framework.WithPII(false),
 	)
+}
+func (t *GetSyntheticMonitorTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"guid":        map[string]interface{}{"type": "string", "description": "Unique identifier for the monitor"},
+			"name":        map[string]interface{}{"type": "string", "description": "Monitor name"},
+			"accountId":   map[string]interface{}{"type": "string", "description": "Account ID the monitor belongs to"},
+			"monitorType": map[string]interface{}{"type": "string", "description": "Type of monitor (e.g., SIMPLE, BROWSER, SCRIPT_API, SCRIPT_BROWSER)"},
+		},
+	}
 }
 
 type ListPrivateLocationsTool struct {
@@ -208,6 +239,25 @@ func (t *ListPrivateLocationsTool) EnforcerProfile(args map[string]interface{}) 
 		framework.WithResourceCost(2),
 		framework.WithPII(false),
 	)
+}
+func (t *ListPrivateLocationsTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"entities": map[string]interface{}{
+				"type":        "array",
+				"description": "List of private locations for synthetic monitoring",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"accountId": map[string]interface{}{"type": "string", "description": "Account ID the location belongs to"},
+						"guid":      map[string]interface{}{"type": "string", "description": "Unique identifier for the private location"},
+						"name":      map[string]interface{}{"type": "string", "description": "Private location name"},
+					},
+				},
+			},
+		},
+	}
 }
 
 type CreatePingMonitorTool struct {
@@ -305,6 +355,25 @@ func (t *CreatePingMonitorTool) EnforcerProfile(args map[string]interface{}) *fr
 		framework.WithIdempotent(false),
 	)
 }
+func (t *CreatePingMonitorTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"errors": map[string]interface{}{
+				"type":        "array",
+				"description": "List of errors if creation failed",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"type":        map[string]interface{}{"type": "string", "description": "Error type"},
+						"description": map[string]interface{}{"type": "string", "description": "Error description"},
+					},
+				},
+			},
+			"message": map[string]interface{}{"type": "string", "description": "Success message with created monitor name"},
+		},
+	}
+}
 
 type DeleteSyntheticMonitorTool struct {
 	framework.BaseTool
@@ -356,4 +425,13 @@ func (t *DeleteSyntheticMonitorTool) EnforcerProfile(args map[string]interface{}
 		framework.WithPII(false),
 		framework.WithIdempotent(true),
 	)
+}
+func (t *DeleteSyntheticMonitorTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"deletedGuid": map[string]interface{}{"type": "string", "description": "GUID of the deleted monitor"},
+			"message":     map[string]interface{}{"type": "string", "description": "Confirmation message with deleted monitor GUID"},
+		},
+	}
 }

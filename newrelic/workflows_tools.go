@@ -77,6 +77,38 @@ func (t *ListWorkflowsTool) EnforcerProfile(args map[string]interface{}) *framew
 		framework.WithPII(false),
 	)
 }
+func (t *ListWorkflowsTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"workflows": map[string]interface{}{
+				"type": "array",
+				"description": "Array of workflow entities",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"id": map[string]interface{}{
+							"type": "string",
+							"description": "Unique workflow identifier",
+						},
+						"name": map[string]interface{}{
+							"type": "string",
+							"description": "Workflow name",
+						},
+						"workflowEnabled": map[string]interface{}{
+							"type": "boolean",
+							"description": "Whether the workflow is currently enabled",
+						},
+					},
+				},
+			},
+			"totalCount": map[string]interface{}{
+				"type": "integer",
+				"description": "Total number of workflows",
+			},
+		},
+	}
+}
 
 type GetWorkflowTool struct {
 	framework.BaseTool
@@ -147,6 +179,25 @@ func (t *GetWorkflowTool) EnforcerProfile(args map[string]interface{}) *framewor
 		framework.WithResourceCost(2),
 		framework.WithPII(false),
 	)
+}
+func (t *GetWorkflowTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"id": map[string]interface{}{
+				"type": "string",
+				"description": "Unique workflow identifier",
+			},
+			"name": map[string]interface{}{
+				"type": "string",
+				"description": "Workflow name",
+			},
+			"workflowEnabled": map[string]interface{}{
+				"type": "boolean",
+				"description": "Whether the workflow is currently enabled",
+			},
+		},
+	}
 }
 
 type CreateWorkflowTool struct {
@@ -257,6 +308,44 @@ func (t *CreateWorkflowTool) EnforcerProfile(args map[string]interface{}) *frame
 		framework.WithIdempotent(false),
 	)
 }
+func (t *CreateWorkflowTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"workflow": map[string]interface{}{
+				"type": "object",
+				"description": "The created workflow",
+				"properties": map[string]interface{}{
+					"id": map[string]interface{}{
+						"type": "string",
+						"description": "Unique workflow identifier",
+					},
+					"name": map[string]interface{}{
+						"type": "string",
+						"description": "Workflow name",
+					},
+				},
+			},
+			"errors": map[string]interface{}{
+				"type": "array",
+				"description": "Array of errors if creation failed",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"type": map[string]interface{}{
+							"type": "string",
+							"description": "Error type",
+						},
+						"description": map[string]interface{}{
+							"type": "string",
+							"description": "Error description",
+						},
+					},
+				},
+			},
+		},
+	}
+}
 
 type UpdateWorkflowTool struct {
 	framework.BaseTool
@@ -336,6 +425,44 @@ func (t *UpdateWorkflowTool) EnforcerProfile(args map[string]interface{}) *frame
 		framework.WithIdempotent(false),
 	)
 }
+func (t *UpdateWorkflowTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"workflow": map[string]interface{}{
+				"type": "object",
+				"description": "The updated workflow",
+				"properties": map[string]interface{}{
+					"id": map[string]interface{}{
+						"type": "string",
+						"description": "Unique workflow identifier",
+					},
+					"name": map[string]interface{}{
+						"type": "string",
+						"description": "Updated workflow name",
+					},
+				},
+			},
+			"errors": map[string]interface{}{
+				"type": "array",
+				"description": "Array of errors if update failed",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"type": map[string]interface{}{
+							"type": "string",
+							"description": "Error type",
+						},
+						"description": map[string]interface{}{
+							"type": "string",
+							"description": "Error description",
+						},
+					},
+				},
+			},
+		},
+	}
+}
 
 type DeleteWorkflowTool struct {
 	framework.BaseTool
@@ -401,4 +528,32 @@ func (t *DeleteWorkflowTool) EnforcerProfile(args map[string]interface{}) *frame
 		framework.WithPII(false),
 		framework.WithIdempotent(true),
 	)
+}
+func (t *DeleteWorkflowTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"id": map[string]interface{}{
+				"type": "string",
+				"description": "ID of the deleted workflow",
+			},
+			"errors": map[string]interface{}{
+				"type": "array",
+				"description": "Array of errors if deletion failed",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"type": map[string]interface{}{
+							"type": "string",
+							"description": "Error type",
+						},
+						"description": map[string]interface{}{
+							"type": "string",
+							"description": "Error description",
+						},
+					},
+				},
+			},
+		},
+	}
 }

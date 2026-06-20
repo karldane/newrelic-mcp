@@ -71,6 +71,33 @@ func (t *GetAlertPolicyTool) EnforcerProfile(args map[string]interface{}) *frame
 	)
 }
 
+func (t *GetAlertPolicyTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"policy": map[string]interface{}{
+				"type":        "object",
+				"description": "Alert policy details",
+				"properties": map[string]interface{}{
+					"id": map[string]interface{}{
+						"type":        "string",
+						"description": "Policy ID",
+					},
+					"name": map[string]interface{}{
+						"type":        "string",
+						"description": "Policy name",
+					},
+					"incidentPreference": map[string]interface{}{
+						"type":        "string",
+						"description": "Incident rollup preference (PER_POLICY, PER_CONDITION, or PER_CONDITION_AND_TARGET)",
+					},
+				},
+			},
+		},
+	}
+	return &schema
+}
+
 type CreateAlertPolicyTool struct {
 	framework.BaseTool
 	client *Client
@@ -131,6 +158,33 @@ func (t *CreateAlertPolicyTool) EnforcerProfile(args map[string]interface{}) *fr
 		framework.WithPII(false),
 		framework.WithIdempotent(false),
 	)
+}
+
+func (t *CreateAlertPolicyTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"alertsPolicyCreate": map[string]interface{}{
+				"type":        "object",
+				"description": "Created alert policy details",
+				"properties": map[string]interface{}{
+					"id": map[string]interface{}{
+						"type":        "string",
+						"description": "Policy ID",
+					},
+					"name": map[string]interface{}{
+						"type":        "string",
+						"description": "Policy name",
+					},
+					"incidentPreference": map[string]interface{}{
+						"type":        "string",
+						"description": "Incident rollup preference",
+					},
+				},
+			},
+		},
+	}
+	return &schema
 }
 
 type UpdateAlertPolicyTool struct {
@@ -200,6 +254,33 @@ func (t *UpdateAlertPolicyTool) EnforcerProfile(args map[string]interface{}) *fr
 	)
 }
 
+func (t *UpdateAlertPolicyTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"alertsPolicyUpdate": map[string]interface{}{
+				"type":        "object",
+				"description": "Updated alert policy details",
+				"properties": map[string]interface{}{
+					"id": map[string]interface{}{
+						"type":        "string",
+						"description": "Policy ID",
+					},
+					"name": map[string]interface{}{
+						"type":        "string",
+						"description": "Policy name",
+					},
+					"incidentPreference": map[string]interface{}{
+						"type":        "string",
+						"description": "Incident rollup preference",
+					},
+				},
+			},
+		},
+	}
+	return &schema
+}
+
 type DeleteAlertPolicyTool struct {
 	framework.BaseTool
 	client *Client
@@ -250,6 +331,25 @@ func (t *DeleteAlertPolicyTool) EnforcerProfile(args map[string]interface{}) *fr
 		framework.WithPII(false),
 		framework.WithIdempotent(true),
 	)
+}
+
+func (t *DeleteAlertPolicyTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"alertsPolicyDelete": map[string]interface{}{
+				"type":        "object",
+				"description": "Deleted alert policy confirmation",
+				"properties": map[string]interface{}{
+					"id": map[string]interface{}{
+						"type":        "string",
+						"description": "ID of the deleted policy",
+					},
+				},
+			},
+		},
+	}
+	return &schema
 }
 
 type ListNRQLAlertConditionsTool struct {
@@ -330,6 +430,60 @@ func (t *ListNRQLAlertConditionsTool) EnforcerProfile(args map[string]interface{
 		framework.WithResourceCost(2),
 		framework.WithPII(false),
 	)
+}
+
+func (t *ListNRQLAlertConditionsTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"nrqlConditions": map[string]interface{}{
+				"type":        "array",
+				"description": "List of NRQL alert conditions",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"id": map[string]interface{}{
+							"type":        "string",
+							"description": "Condition ID",
+						},
+						"name": map[string]interface{}{
+							"type":        "string",
+							"description": "Condition name",
+						},
+						"enabled": map[string]interface{}{
+							"type":        "boolean",
+							"description": "Whether the condition is enabled",
+						},
+						"nrql": map[string]interface{}{
+							"type":        "object",
+							"description": "NRQL query details",
+							"properties": map[string]interface{}{
+								"query": map[string]interface{}{
+									"type":        "string",
+									"description": "NRQL query string",
+								},
+							},
+						},
+						"critical": map[string]interface{}{
+							"type":        "object",
+							"description": "Critical threshold settings",
+							"properties": map[string]interface{}{
+								"thresholdDuration": map[string]interface{}{
+									"type":        "number",
+									"description": "Threshold duration in seconds",
+								},
+								"duration": map[string]interface{}{
+									"type":        "number",
+									"description": "Duration value",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	return &schema
 }
 
 // Make existing create_alert_condition tool real by updating its Handle method.
@@ -433,6 +587,33 @@ func (t *RealCreateAlertConditionTool) EnforcerProfile(args map[string]interface
 		framework.WithPII(false),
 		framework.WithIdempotent(false),
 	)
+}
+
+func (t *RealCreateAlertConditionTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"alertsNrqlConditionCreate": map[string]interface{}{
+				"type":        "object",
+				"description": "Created alert condition details",
+				"properties": map[string]interface{}{
+					"id": map[string]interface{}{
+						"type":        "string",
+						"description": "Condition ID",
+					},
+					"name": map[string]interface{}{
+						"type":        "string",
+						"description": "Condition name",
+					},
+					"enabled": map[string]interface{}{
+						"type":        "boolean",
+						"description": "Whether the condition is enabled",
+					},
+				},
+			},
+		},
+	}
+	return &schema
 }
 
 func getAlertPolicyErrorMessages(result map[string]interface{}) string {

@@ -75,6 +75,26 @@ func (t *ListApplicationsTool) Handle(ctx framework.CallContext, args map[string
 	}
 	return framework.TextResult(formatResults(apps)), nil
 }
+func (t *ListApplicationsTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"applications": map[string]interface{}{
+				"type":        "array",
+				"description": "List of APM applications",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"guid":     map[string]interface{}{"type": "string", "description": "Application GUID"},
+						"name":     map[string]interface{}{"type": "string", "description": "Application name"},
+						"language": map[string]interface{}{"type": "string", "description": "Programming language"},
+					},
+				},
+			},
+		},
+	}
+	return &schema
+}
 func (t *ListApplicationsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
@@ -164,6 +184,27 @@ func (t *GetAlertConditionsTool) Handle(ctx framework.CallContext, args map[stri
 	}
 	return framework.TextResult(strings.TrimRight(sb.String(), "\n")), nil
 }
+func (t *GetAlertConditionsTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"alertConditions": map[string]interface{}{
+				"type":        "array",
+				"description": "List of alert conditions for the policy",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"id":      map[string]interface{}{"type": "string", "description": "Alert condition ID"},
+						"name":    map[string]interface{}{"type": "string", "description": "Alert condition name"},
+						"type":    map[string]interface{}{"type": "string", "description": "Type of alert condition"},
+						"enabled": map[string]interface{}{"type": "boolean", "description": "Whether condition is enabled"},
+					},
+				},
+			},
+		},
+	}
+	return &schema
+}
 func (t *GetAlertConditionsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
@@ -184,8 +225,8 @@ func (t *QueryTracesTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
 		Properties: map[string]interface{}{
-			"service_name": map[string]interface{}{"type": "string"},
-			"error_only":   map[string]interface{}{"type": "boolean"},
+			"service_name": map[string]interface{}{"type": "string", "description": "Service/entity name to filter traces"},
+			"error_only":   map[string]interface{}{"type": "boolean", "description": "Only return traces with errors"},
 			"duration":     map[string]interface{}{"type": "string", "description": "Time range"},
 			"account_id":   map[string]interface{}{"type": "string", "description": "Account ID (optional)"},
 		},
@@ -223,6 +264,27 @@ func (t *QueryTracesTool) Handle(ctx framework.CallContext, args map[string]inte
 		return framework.TextResult("No traces found"), nil
 	}
 	return framework.TextResult(formatResults(results)), nil
+}
+func (t *QueryTracesTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"traces": map[string]interface{}{
+				"type":        "array",
+				"description": "List of distributed traces",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"traceId":     map[string]interface{}{"type": "string", "description": "Unique trace identifier"},
+						"duration":    map[string]interface{}{"type": "number", "description": "Trace duration in milliseconds"},
+						"entity.name": map[string]interface{}{"type": "string", "description": "Service name"},
+						"error":       map[string]interface{}{"type": "boolean", "description": "Whether trace contains errors"},
+					},
+				},
+			},
+		},
+	}
+	return &schema
 }
 func (t *QueryTracesTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -271,6 +333,27 @@ func (t *GetApplicationMetricsTool) Handle(ctx framework.CallContext, args map[s
 	}
 	return framework.TextResult(formatResults(results)), nil
 }
+func (t *GetApplicationMetricsTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"metrics": map[string]interface{}{
+				"type":        "array",
+				"description": "Application performance metrics",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"throughput":   map[string]interface{}{"type": "number", "description": "Requests per minute"},
+						"errorRate":    map[string]interface{}{"type": "number", "description": "Error percentage"},
+						"responseTime": map[string]interface{}{"type": "number", "description": "Average response time in seconds"},
+						"apdex":        map[string]interface{}{"type": "number", "description": "Apdex score (0-1)"},
+					},
+				},
+			},
+		},
+	}
+	return &schema
+}
 func (t *GetApplicationMetricsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
@@ -315,6 +398,29 @@ func (t *GetAlertViolationsTool) Handle(ctx framework.CallContext, args map[stri
 		return framework.TextResult("No alert violations found"), nil
 	}
 	return framework.TextResult(formatResults(results)), nil
+}
+func (t *GetAlertViolationsTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"violations": map[string]interface{}{
+				"type":        "array",
+				"description": "List of alert violations",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"violationId":   map[string]interface{}{"type": "string", "description": "Unique violation ID"},
+						"policyName":    map[string]interface{}{"type": "string", "description": "Alert policy name"},
+						"conditionName": map[string]interface{}{"type": "string", "description": "Alert condition name"},
+						"priority":      map[string]interface{}{"type": "string", "description": "Violation priority (critical/warning)"},
+						"openedAt":      map[string]interface{}{"type": "string", "description": "When violation started (ISO timestamp)"},
+						"closedAt":      map[string]interface{}{"type": "string", "description": "When violation closed (ISO timestamp, null if open)"},
+					},
+				},
+			},
+		},
+	}
+	return &schema
 }
 func (t *GetAlertViolationsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -367,6 +473,30 @@ func (t *GetTransactionTracesTool) Handle(ctx framework.CallContext, args map[st
 	}
 	return framework.TextResult(fmt.Sprintf("Transaction traces for %s", appName)), nil
 }
+func (t *GetTransactionTracesTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"traces": map[string]interface{}{
+				"type":        "array",
+				"description": "List of slowest transaction traces",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"traceId":         map[string]interface{}{"type": "string", "description": "Transaction trace ID"},
+						"name":            map[string]interface{}{"type": "string", "description": "Transaction name"},
+						"duration":        map[string]interface{}{"type": "number", "description": "Total duration in milliseconds"},
+						"timestamp":       map[string]interface{}{"type": "string", "description": "When trace occurred (ISO timestamp)"},
+						"databaseTime":    map[string]interface{}{"type": "number", "description": "Time spent in database calls"},
+						"externalTime":    map[string]interface{}{"type": "number", "description": "Time spent on external calls"},
+						"applicationTime": map[string]interface{}{"type": "number", "description": "Time spent in application code"},
+					},
+				},
+			},
+		},
+	}
+	return &schema
+}
 func (t *GetTransactionTracesTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
@@ -403,6 +533,39 @@ func (t *GetTraceDetailsTool) Handle(ctx framework.CallContext, args map[string]
 		return framework.TextResult(""), fmt.Errorf("missing required parameter: trace_id")
 	}
 	return framework.TextResult(fmt.Sprintf("Trace details for %s", traceID)), nil
+}
+func (t *GetTraceDetailsTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"trace": map[string]interface{}{
+				"type":        "object",
+				"description": "Detailed trace information with spans",
+				"properties": map[string]interface{}{
+					"traceId":  map[string]interface{}{"type": "string", "description": "Trace ID"},
+					"duration": map[string]interface{}{"type": "number", "description": "Total trace duration in milliseconds"},
+					"spans": map[string]interface{}{
+						"type":        "array",
+						"description": "List of spans in the trace",
+						"items": map[string]interface{}{
+							"type": "object",
+							"properties": map[string]interface{}{
+								"spanId":      map[string]interface{}{"type": "string", "description": "Unique span ID"},
+								"parentId":    map[string]interface{}{"type": "string", "description": "Parent span ID (null for root)"},
+								"name":        map[string]interface{}{"type": "string", "description": "Span operation name"},
+								"duration":    map[string]interface{}{"type": "number", "description": "Span duration in milliseconds"},
+								"service":     map[string]interface{}{"type": "string", "description": "Service that generated the span"},
+								"timestamp":   map[string]interface{}{"type": "string", "description": "When span started"},
+								"error":       map[string]interface{}{"type": "boolean", "description": "Whether span had errors"},
+								"errorDetail": map[string]interface{}{"type": "string", "description": "Error message if error occurred"},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	return &schema
 }
 func (t *GetTraceDetailsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -474,6 +637,27 @@ func (t *TailLogsTool) Handle(ctx framework.CallContext, args map[string]interfa
 		return framework.TextResult("No recent log entries found"), nil
 	}
 	return framework.TextResult(formatResults(results)), nil
+}
+func (t *TailLogsTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"logs": map[string]interface{}{
+				"type":        "array",
+				"description": "Recent log entries matching the query",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"timestamp": map[string]interface{}{"type": "string", "description": "When log was generated (ISO timestamp)"},
+						"message":   map[string]interface{}{"type": "string", "description": "Log message content"},
+						"level":     map[string]interface{}{"type": "string", "description": "Log level (ERROR, WARN, INFO, DEBUG)"},
+						"service":   map[string]interface{}{"type": "string", "description": "Service that generated the log"},
+					},
+				},
+			},
+		},
+	}
+	return &schema
 }
 func (t *TailLogsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -570,6 +754,35 @@ func (t *GetInfrastructureMetricsTool) Handle(ctx framework.CallContext, args ma
 	}
 	return framework.TextResult(formatResults(results)), nil
 }
+func (t *GetInfrastructureMetricsTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"metrics": map[string]interface{}{
+				"type":        "array",
+				"description": "Infrastructure metrics for hosts, containers, or Kubernetes",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"hostname":                        map[string]interface{}{"type": "string", "description": "Hostname"},
+						"cpuPercent":                      map[string]interface{}{"type": "number", "description": "CPU usage percentage"},
+						"cpuUserPercent":                  map[string]interface{}{"type": "number", "description": "CPU user space percentage"},
+						"cpuSystemPercent":                map[string]interface{}{"type": "number", "description": "CPU system space percentage"},
+						"memoryPercent":                   map[string]interface{}{"type": "number", "description": "Memory usage percentage"},
+						"memoryUsedBytes":                 map[string]interface{}{"type": "number", "description": "Memory used in bytes"},
+						"memoryTotalBytes":                map[string]interface{}{"type": "number", "description": "Total memory in bytes"},
+						"diskUsedPercent":                 map[string]interface{}{"type": "number", "description": "Disk usage percentage"},
+						"diskReadBytesPerSecond":          map[string]interface{}{"type": "number", "description": "Disk read throughput"},
+						"diskWriteBytesPerSecond":         map[string]interface{}{"type": "number", "description": "Disk write throughput"},
+						"networkReceiveBytesPerSecond":    map[string]interface{}{"type": "number", "description": "Network receive throughput"},
+						"networkTransmitBytesPerSecond":   map[string]interface{}{"type": "number", "description": "Network transmit throughput"},
+					},
+				},
+			},
+		},
+	}
+	return &schema
+}
 func (t *GetInfrastructureMetricsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
@@ -638,6 +851,25 @@ func (t *ListDashboardsTool) Handle(ctx framework.CallContext, args map[string]i
 		return framework.TextResult("No dashboards found"), nil
 	}
 	return framework.TextResult(formatResults(dashboards)), nil
+}
+func (t *ListDashboardsTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"dashboards": map[string]interface{}{
+				"type":        "array",
+				"description": "List of dashboards in the account",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"guid": map[string]interface{}{"type": "string", "description": "Dashboard GUID"},
+						"name": map[string]interface{}{"type": "string", "description": "Dashboard name"},
+					},
+				},
+			},
+		},
+	}
+	return &schema
 }
 func (t *ListDashboardsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -715,6 +947,50 @@ func (t *GetDashboardDataTool) Handle(ctx framework.CallContext, args map[string
 	}
 	return framework.TextResult(formatSingleResult(dashboard)), nil
 }
+func (t *GetDashboardDataTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"dashboard": map[string]interface{}{
+				"type":        "object",
+				"description": "Dashboard details with widgets",
+				"properties": map[string]interface{}{
+					"guid":        map[string]interface{}{"type": "string", "description": "Dashboard GUID"},
+					"name":        map[string]interface{}{"type": "string", "description": "Dashboard name"},
+					"description": map[string]interface{}{"type": "string", "description": "Dashboard description"},
+					"pages": map[string]interface{}{
+						"type":        "array",
+						"description": "Dashboard pages",
+						"items": map[string]interface{}{
+							"type": "object",
+							"properties": map[string]interface{}{
+								"widgets": map[string]interface{}{
+									"type":        "array",
+									"description": "Widgets on the page",
+									"items": map[string]interface{}{
+										"type": "object",
+										"properties": map[string]interface{}{
+											"id":    map[string]interface{}{"type": "string", "description": "Widget ID"},
+											"title": map[string]interface{}{"type": "string", "description": "Widget title"},
+											"visualization": map[string]interface{}{
+												"type":        "object",
+												"description": "Widget visualization config",
+												"properties": map[string]interface{}{
+													"id": map[string]interface{}{"type": "string", "description": "Visualization type ID"},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	return &schema
+}
 func (t *GetDashboardDataTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
@@ -758,6 +1034,30 @@ func (t *AcknowledgeAlertViolationTool) Handle(ctx framework.CallContext, args m
 		return framework.TextResult(fmt.Sprintf("Acknowledged violation %s with comment: %s", violationID, comment)), nil
 	}
 	return framework.TextResult(fmt.Sprintf("Acknowledged violation %s", violationID)), nil
+}
+func (t *AcknowledgeAlertViolationTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"acknowledged": map[string]interface{}{
+				"type":        "boolean",
+				"description": "Whether acknowledgment was successful",
+			},
+			"violationId": map[string]interface{}{
+				"type":        "string",
+				"description": "The violation ID that was acknowledged",
+			},
+			"comment": map[string]interface{}{
+				"type":        "string",
+				"description": "Optional comment included with acknowledgment",
+			},
+			"message": map[string]interface{}{
+				"type":        "string",
+				"description": "Status message",
+			},
+		},
+	}
+	return &schema
 }
 func (t *AcknowledgeAlertViolationTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
@@ -811,6 +1111,31 @@ func (t *CreateAlertConditionTool) Handle(ctx framework.CallContext, args map[st
 	name, _ := args["name"].(string)
 	return framework.TextResult(fmt.Sprintf("Created alert condition: %s", name)), nil
 }
+func (t *CreateAlertConditionTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"condition": map[string]interface{}{
+				"type":        "object",
+				"description": "Created alert condition details",
+				"properties": map[string]interface{}{
+					"id":                 map[string]interface{}{"type": "string", "description": "Alert condition ID"},
+					"name":               map[string]interface{}{"type": "string", "description": "Alert condition name"},
+					"policyId":           map[string]interface{}{"type": "string", "description": "Policy ID the condition belongs to"},
+					"nrqlQuery":          map[string]interface{}{"type": "string", "description": "NRQL query used"},
+					"criticalThreshold":  map[string]interface{}{"type": "number", "description": "Critical threshold value"},
+					"durationMinutes":    map[string]interface{}{"type": "number", "description": "Duration before triggering"},
+					"enabled":            map[string]interface{}{"type": "boolean", "description": "Whether condition is enabled"},
+				},
+			},
+			"message": map[string]interface{}{
+				"type":        "string",
+				"description": "Status message",
+			},
+		},
+	}
+	return &schema
+}
 func (t *CreateAlertConditionTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
@@ -858,6 +1183,29 @@ func (t *AddDashboardWidgetTool) Schema() mcp.ToolInputSchema {
 func (t *AddDashboardWidgetTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	widgetTitle, _ := args["widget_title"].(string)
 	return framework.TextResult(fmt.Sprintf("Added widget '%s' to dashboard", widgetTitle)), nil
+}
+func (t *AddDashboardWidgetTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"widget": map[string]interface{}{
+				"type":        "object",
+				"description": "Created widget details",
+				"properties": map[string]interface{}{
+					"id":             map[string]interface{}{"type": "string", "description": "Widget ID"},
+					"title":          map[string]interface{}{"type": "string", "description": "Widget title"},
+					"dashboardGuid":  map[string]interface{}{"type": "string", "description": "Dashboard GUID"},
+					"nrqlQuery":      map[string]interface{}{"type": "string", "description": "NRQL query used"},
+					"visualization":  map[string]interface{}{"type": "string", "description": "Visualization type"},
+				},
+			},
+			"message": map[string]interface{}{
+				"type":        "string",
+				"description": "Status message",
+			},
+		},
+	}
+	return &schema
 }
 func (t *AddDashboardWidgetTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(

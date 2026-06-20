@@ -422,6 +422,22 @@ func (t *NRQLQueryTool) Handle(ctx framework.CallContext, args map[string]interf
 	}
 	return framework.TextResult(formatResults(results)), nil
 }
+func (t *NRQLQueryTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"results": map[string]interface{}{
+				"type":        "array",
+				"description": "Query results",
+				"items": map[string]interface{}{
+					"type":        "object",
+					"description": "Result row with dynamic fields based on NRQL query",
+				},
+			},
+		},
+	}
+	return &schema
+}
 func (t *NRQLQueryTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
@@ -436,9 +452,16 @@ type ListAlertsTool struct {
 	client *Client
 }
 
-func (t *ListAlertsTool) Name() string                { return "list_alerts" }
-func (t *ListAlertsTool) Description() string         { return "List alert policies" }
-func (t *ListAlertsTool) Schema() mcp.ToolInputSchema { return mcp.ToolInputSchema{Type: "object"} }
+func (t *ListAlertsTool) Name() string        { return "list_alerts" }
+func (t *ListAlertsTool) Description() string { return "List alert policies" }
+func (t *ListAlertsTool) Schema() mcp.ToolInputSchema {
+	return mcp.ToolInputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"account_id": map[string]interface{}{"type": "string", "description": "Account ID (optional)"},
+		},
+	}
+}
 func (t *ListAlertsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	accountID, _ := args["account_id"].(string)
 	aid, err := t.client.getOrDetectAccountID(ctx, accountID)
@@ -484,6 +507,26 @@ func (t *ListAlertsTool) Handle(ctx framework.CallContext, args map[string]inter
 	}
 	return framework.TextResult(formatResults(policies)), nil
 }
+func (t *ListAlertsTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"policies": map[string]interface{}{
+				"type":        "array",
+				"description": "List of alert policies",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"id":                 map[string]interface{}{"type": "string", "description": "Policy ID"},
+						"name":               map[string]interface{}{"type": "string", "description": "Policy name"},
+						"incidentPreference": map[string]interface{}{"type": "string", "description": "Incident preference (PER_POLICY, PER_CONDITION, PER_CONDITION_AND_TARGET)"},
+					},
+				},
+			},
+		},
+	}
+	return &schema
+}
 func (t *ListAlertsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
@@ -498,9 +541,18 @@ type GetAPMMetricsTool struct {
 	client *Client
 }
 
-func (t *GetAPMMetricsTool) Name() string                { return "get_apm_metrics" }
-func (t *GetAPMMetricsTool) Description() string         { return "Get APM metrics" }
-func (t *GetAPMMetricsTool) Schema() mcp.ToolInputSchema { return mcp.ToolInputSchema{Type: "object"} }
+func (t *GetAPMMetricsTool) Name() string        { return "get_apm_metrics" }
+func (t *GetAPMMetricsTool) Description() string { return "Get APM metrics" }
+func (t *GetAPMMetricsTool) Schema() mcp.ToolInputSchema {
+	return mcp.ToolInputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"app_name":   map[string]interface{}{"type": "string", "description": "Application name (optional)"},
+			"duration":   map[string]interface{}{"type": "string", "description": "Time range (e.g., '1 hour', '24 hours')"},
+			"account_id": map[string]interface{}{"type": "string", "description": "Account ID (optional)"},
+		},
+	}
+}
 func (t *GetAPMMetricsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	accountID, _ := args["account_id"].(string)
 	appName, _ := args["app_name"].(string)
@@ -522,6 +574,27 @@ func (t *GetAPMMetricsTool) Handle(ctx framework.CallContext, args map[string]in
 	}
 	return framework.TextResult(formatResults(results)), nil
 }
+func (t *GetAPMMetricsTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"metrics": map[string]interface{}{
+				"type":        "array",
+				"description": "APM application metrics",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"appName":          map[string]interface{}{"type": "string", "description": "Application name"},
+						"duration":         map[string]interface{}{"type": "number", "description": "Average response time in seconds"},
+						"throughput":       map[string]interface{}{"type": "number", "description": "Requests per minute"},
+						"errorPercentage":  map[string]interface{}{"type": "number", "description": "Error rate as percentage"},
+					},
+				},
+			},
+		},
+	}
+	return &schema
+}
 func (t *GetAPMMetricsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskLow),
@@ -536,9 +609,18 @@ type SearchLogsTool struct {
 	client *Client
 }
 
-func (t *SearchLogsTool) Name() string                { return "search_logs" }
-func (t *SearchLogsTool) Description() string         { return "Search logs" }
-func (t *SearchLogsTool) Schema() mcp.ToolInputSchema { return mcp.ToolInputSchema{Type: "object"} }
+func (t *SearchLogsTool) Name() string        { return "search_logs" }
+func (t *SearchLogsTool) Description() string { return "Search logs" }
+func (t *SearchLogsTool) Schema() mcp.ToolInputSchema {
+	return mcp.ToolInputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"query":      map[string]interface{}{"type": "string", "description": "NRQL log query (optional)"},
+			"duration":   map[string]interface{}{"type": "string", "description": "Time range (e.g., '1 hour', '24 hours')"},
+			"account_id": map[string]interface{}{"type": "string", "description": "Account ID (optional)"},
+		},
+	}
+}
 func (t *SearchLogsTool) Handle(ctx framework.CallContext, args map[string]interface{}) (framework.ToolResult, error) {
 	accountID, _ := args["account_id"].(string)
 	queryVal, _ := args["query"].(string)
@@ -569,6 +651,27 @@ func (t *SearchLogsTool) Handle(ctx framework.CallContext, args map[string]inter
 		return framework.TextResult("No log entries found"), nil
 	}
 	return framework.TextResult(formatResults(results)), nil
+}
+func (t *SearchLogsTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"logs": map[string]interface{}{
+				"type":        "array",
+				"description": "Log entries matching search criteria",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"timestamp": map[string]interface{}{"type": "number", "description": "Log timestamp (epoch milliseconds)"},
+						"message":   map[string]interface{}{"type": "string", "description": "Log message"},
+						"level":     map[string]interface{}{"type": "string", "description": "Log level (INFO, WARN, ERROR, etc.)"},
+						"service":   map[string]interface{}{"type": "string", "description": "Service name"},
+					},
+				},
+			},
+		},
+	}
+	return &schema
 }
 func (t *SearchLogsTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(

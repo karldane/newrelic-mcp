@@ -68,6 +68,38 @@ func (t *GetEntityTagsTool) EnforcerProfile(args map[string]interface{}) *framew
 		framework.WithPII(false),
 	)
 }
+func (t *GetEntityTagsTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"guid": map[string]interface{}{
+				"type":        "string",
+				"description": "Entity GUID",
+			},
+			"tags": map[string]interface{}{
+				"type":        "array",
+				"description": "List of tags on the entity",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"key": map[string]interface{}{
+							"type":        "string",
+							"description": "Tag key",
+						},
+						"values": map[string]interface{}{
+							"type":        "array",
+							"description": "Tag values",
+							"items": map[string]interface{}{
+								"type": "string",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	return &schema
+}
 
 type AddEntityTagsTool struct {
 	framework.BaseTool
@@ -151,6 +183,31 @@ func (t *AddEntityTagsTool) EnforcerProfile(args map[string]interface{}) *framew
 		framework.WithIdempotent(false),
 	)
 }
+func (t *AddEntityTagsTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"errors": map[string]interface{}{
+				"type":        "array",
+				"description": "List of errors if the operation failed",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"type": map[string]interface{}{
+							"type":        "string",
+							"description": "Error type",
+						},
+						"description": map[string]interface{}{
+							"type":        "string",
+							"description": "Error description",
+						},
+					},
+				},
+			},
+		},
+	}
+	return &schema
+}
 
 type RemoveEntityTagsTool struct {
 	framework.BaseTool
@@ -226,6 +283,31 @@ func (t *RemoveEntityTagsTool) EnforcerProfile(args map[string]interface{}) *fra
 		framework.WithPII(false),
 		framework.WithIdempotent(true),
 	)
+}
+func (t *RemoveEntityTagsTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"errors": map[string]interface{}{
+				"type":        "array",
+				"description": "List of errors if the operation failed",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"type": map[string]interface{}{
+							"type":        "string",
+							"description": "Error type",
+						},
+						"description": map[string]interface{}{
+							"type":        "string",
+							"description": "Error description",
+						},
+					},
+				},
+			},
+		},
+	}
+	return &schema
 }
 
 type ReplaceEntityTagsTool struct {
@@ -309,4 +391,29 @@ func (t *ReplaceEntityTagsTool) EnforcerProfile(args map[string]interface{}) *fr
 		framework.WithPII(false),
 		framework.WithIdempotent(true),
 	)
+}
+func (t *ReplaceEntityTagsTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"errors": map[string]interface{}{
+				"type":        "array",
+				"description": "List of errors if the operation failed",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"type": map[string]interface{}{
+							"type":        "string",
+							"description": "Error type",
+						},
+						"description": map[string]interface{}{
+							"type":        "string",
+							"description": "Error description",
+						},
+					},
+				},
+			},
+		},
+	}
+	return &schema
 }

@@ -3,7 +3,7 @@ module github.com/karldane/newrelic-mcp
 go 1.25.0
 
 require (
-	github.com/karldane/mcp-framework v0.2.10-0.20260620164700-ab5781ec8215
+	github.com/karldane/mcp-framework v0.2.10-0.20260620170805-270f3b00d2ea
 	github.com/mark3labs/mcp-go v0.45.0
 )
 

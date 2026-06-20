@@ -69,6 +69,34 @@ func (t *ListWorkloadsTool) EnforcerProfile(args map[string]interface{}) *framew
 		framework.WithPII(false),
 	)
 }
+func (t *ListWorkloadsTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"workloads": map[string]interface{}{
+				"type":        "array",
+				"description": "List of workloads in the account",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"guid": map[string]interface{}{
+							"type":        "string",
+							"description": "Unique identifier for the workload",
+						},
+						"name": map[string]interface{}{
+							"type":        "string",
+							"description": "Name of the workload",
+						},
+						"workloadStatus": map[string]interface{}{
+							"type":        "string",
+							"description": "Current status of the workload",
+						},
+					},
+				},
+			},
+		},
+	}
+}
 
 type GetWorkloadTool struct {
 	framework.BaseTool
@@ -121,4 +149,35 @@ func (t *GetWorkloadTool) EnforcerProfile(args map[string]interface{}) *framewor
 		framework.WithResourceCost(2),
 		framework.WithPII(false),
 	)
+}
+func (t *GetWorkloadTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"entity": map[string]interface{}{
+				"type":        "object",
+				"description": "Workload entity details",
+				"properties": map[string]interface{}{
+					"guid": map[string]interface{}{
+						"type":        "string",
+						"description": "Unique identifier for the workload entity",
+					},
+					"name": map[string]interface{}{
+						"type":        "string",
+						"description": "Name of the workload",
+					},
+					"workload": map[string]interface{}{
+						"type":        "object",
+						"description": "Workload-specific details",
+						"properties": map[string]interface{}{
+							"status": map[string]interface{}{
+								"type":        "string",
+								"description": "Current operational status of the workload",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 }

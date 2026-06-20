@@ -82,6 +82,39 @@ func (t *SearchEntitiesTool) EnforcerProfile(args map[string]interface{}) *frame
 		framework.WithPII(false),
 	)
 }
+func (t *SearchEntitiesTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"entities": map[string]interface{}{
+				"type":        "array",
+				"description": "List of entities matching the search query",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"guid": map[string]interface{}{
+							"type":        "string",
+							"description": "Unique identifier for the entity",
+						},
+						"name": map[string]interface{}{
+							"type":        "string",
+							"description": "Name of the entity",
+						},
+						"entityType": map[string]interface{}{
+							"type":        "string",
+							"description": "Type of the entity (e.g., APPLICATION, HOST)",
+						},
+						"reporting": map[string]interface{}{
+							"type":        "boolean",
+							"description": "Whether the entity is currently reporting data",
+						},
+					},
+				},
+			},
+		},
+	}
+	return &schema
+}
 
 type DeleteEntityTool struct {
 	framework.BaseTool
@@ -139,4 +172,23 @@ func (t *DeleteEntityTool) EnforcerProfile(args map[string]interface{}) *framewo
 		framework.WithPII(false),
 		framework.WithIdempotent(true),
 	)
+}
+func (t *DeleteEntityTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"deleted": map[string]interface{}{
+				"type":        "array",
+				"description": "List of entity GUIDs that were successfully deleted",
+				"items": map[string]interface{}{
+					"type": "string",
+				},
+			},
+			"message": map[string]interface{}{
+				"type":        "string",
+				"description": "Confirmation message indicating which entities were deleted",
+			},
+		},
+	}
+	return &schema
 }

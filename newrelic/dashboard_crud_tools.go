@@ -74,6 +74,73 @@ func (t *GetDashboardTool) EnforcerProfile(args map[string]interface{}) *framewo
 		framework.WithPII(false),
 	)
 }
+func (t *GetDashboardTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"guid": map[string]interface{}{
+				"type":        "string",
+				"description": "Dashboard GUID",
+			},
+			"name": map[string]interface{}{
+				"type":        "string",
+				"description": "Dashboard name",
+			},
+			"description": map[string]interface{}{
+				"type":        "string",
+				"description": "Dashboard description",
+			},
+			"permissions": map[string]interface{}{
+				"type":        "string",
+				"description": "Dashboard permissions (PRIVATE, PUBLIC_READ_ONLY, PUBLIC_READ_WRITE)",
+			},
+			"pages": map[string]interface{}{
+				"type":        "array",
+				"description": "Dashboard pages",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"guid": map[string]interface{}{
+							"type":        "string",
+							"description": "Page GUID",
+						},
+						"name": map[string]interface{}{
+							"type":        "string",
+							"description": "Page name",
+						},
+						"widgets": map[string]interface{}{
+							"type":        "array",
+							"description": "Widgets on this page",
+							"items": map[string]interface{}{
+								"type": "object",
+								"properties": map[string]interface{}{
+									"id": map[string]interface{}{
+										"type":        "string",
+										"description": "Widget ID",
+									},
+									"title": map[string]interface{}{
+										"type":        "string",
+										"description": "Widget title",
+									},
+									"visualization": map[string]interface{}{
+										"type":        "object",
+										"description": "Visualization configuration",
+										"properties": map[string]interface{}{
+											"id": map[string]interface{}{
+												"type":        "string",
+												"description": "Visualization type (e.g., viz.billboard, viz.line)",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
 
 type CreateDashboardTool struct {
 	framework.BaseTool
@@ -185,6 +252,44 @@ func (t *CreateDashboardTool) EnforcerProfile(args map[string]interface{}) *fram
 		framework.WithIdempotent(false),
 	)
 }
+func (t *CreateDashboardTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"entityResult": map[string]interface{}{
+				"type":        "object",
+				"description": "The created dashboard entity",
+				"properties": map[string]interface{}{
+					"guid": map[string]interface{}{
+						"type":        "string",
+						"description": "Dashboard GUID",
+					},
+					"name": map[string]interface{}{
+						"type":        "string",
+						"description": "Dashboard name",
+					},
+				},
+			},
+			"errors": map[string]interface{}{
+				"type":        "array",
+				"description": "API errors, if any",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"type": map[string]interface{}{
+							"type":        "string",
+							"description": "Error type",
+						},
+						"description": map[string]interface{}{
+							"type":        "string",
+							"description": "Error description",
+						},
+					},
+				},
+			},
+		},
+	}
+}
 
 type UpdateDashboardTool struct {
 	framework.BaseTool
@@ -268,6 +373,44 @@ func (t *UpdateDashboardTool) EnforcerProfile(args map[string]interface{}) *fram
 		framework.WithIdempotent(false),
 	)
 }
+func (t *UpdateDashboardTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"entityResult": map[string]interface{}{
+				"type":        "object",
+				"description": "The updated dashboard entity",
+				"properties": map[string]interface{}{
+					"guid": map[string]interface{}{
+						"type":        "string",
+						"description": "Dashboard GUID",
+					},
+					"name": map[string]interface{}{
+						"type":        "string",
+						"description": "Dashboard name",
+					},
+				},
+			},
+			"errors": map[string]interface{}{
+				"type":        "array",
+				"description": "API errors, if any",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"type": map[string]interface{}{
+							"type":        "string",
+							"description": "Error type",
+						},
+						"description": map[string]interface{}{
+							"type":        "string",
+							"description": "Error description",
+						},
+					},
+				},
+			},
+		},
+	}
+}
 
 type DeleteDashboardTool struct {
 	framework.BaseTool
@@ -331,4 +474,32 @@ func (t *DeleteDashboardTool) EnforcerProfile(args map[string]interface{}) *fram
 		framework.WithPII(false),
 		framework.WithIdempotent(true),
 	)
+}
+func (t *DeleteDashboardTool) OutputSchema() *mcp.ToolOutputSchema {
+	return &mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"status": map[string]interface{}{
+				"type":        "string",
+				"description": "Deletion status",
+			},
+			"errors": map[string]interface{}{
+				"type":        "array",
+				"description": "API errors, if any",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"type": map[string]interface{}{
+							"type":        "string",
+							"description": "Error type",
+						},
+						"description": map[string]interface{}{
+							"type":        "string",
+							"description": "Error description",
+						},
+					},
+				},
+			},
+		},
+	}
 }

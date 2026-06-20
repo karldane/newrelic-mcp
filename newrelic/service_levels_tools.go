@@ -77,6 +77,39 @@ func (t *ListServiceLevelsTool) EnforcerProfile(args map[string]interface{}) *fr
 		framework.WithPII(false),
 	)
 }
+func (t *ListServiceLevelsTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"indicators": map[string]interface{}{
+				"type":        "array",
+				"description": "List of service level indicators for the entity",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"id": map[string]interface{}{
+							"type":        "string",
+							"description": "Unique identifier for the service level indicator",
+						},
+						"name": map[string]interface{}{
+							"type":        "string",
+							"description": "Name of the service level indicator",
+						},
+						"description": map[string]interface{}{
+							"type":        "string",
+							"description": "Description of the service level indicator",
+						},
+						"sli": map[string]interface{}{
+							"type":        "object",
+							"description": "Service level indicator configuration and metrics",
+						},
+					},
+				},
+			},
+		},
+	}
+	return &schema
+}
 
 type CreateServiceLevelTool struct {
 	framework.BaseTool
@@ -177,6 +210,45 @@ func (t *CreateServiceLevelTool) EnforcerProfile(args map[string]interface{}) *f
 		framework.WithIdempotent(false),
 	)
 }
+func (t *CreateServiceLevelTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"indicator": map[string]interface{}{
+				"type":        "object",
+				"description": "The created service level indicator",
+				"properties": map[string]interface{}{
+					"id": map[string]interface{}{
+						"type":        "string",
+						"description": "Unique identifier for the created SLI",
+					},
+					"name": map[string]interface{}{
+						"type":        "string",
+						"description": "Name of the created SLI",
+					},
+				},
+			},
+			"errors": map[string]interface{}{
+				"type":        "array",
+				"description": "Any errors that occurred during creation",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"type": map[string]interface{}{
+							"type":        "string",
+							"description": "Error type",
+						},
+						"description": map[string]interface{}{
+							"type":        "string",
+							"description": "Error description",
+						},
+					},
+				},
+			},
+		},
+	}
+	return &schema
+}
 
 type UpdateServiceLevelTool struct {
 	framework.BaseTool
@@ -259,4 +331,43 @@ func (t *UpdateServiceLevelTool) EnforcerProfile(args map[string]interface{}) *f
 		framework.WithPII(false),
 		framework.WithIdempotent(false),
 	)
+}
+func (t *UpdateServiceLevelTool) OutputSchema() *mcp.ToolOutputSchema {
+	schema := mcp.ToolOutputSchema{
+		Type: "object",
+		Properties: map[string]interface{}{
+			"indicator": map[string]interface{}{
+				"type":        "object",
+				"description": "The updated service level indicator",
+				"properties": map[string]interface{}{
+					"id": map[string]interface{}{
+						"type":        "string",
+						"description": "Unique identifier for the updated SLI",
+					},
+					"name": map[string]interface{}{
+						"type":        "string",
+						"description": "Name of the updated SLI",
+					},
+				},
+			},
+			"errors": map[string]interface{}{
+				"type":        "array",
+				"description": "Any errors that occurred during update",
+				"items": map[string]interface{}{
+					"type": "object",
+					"properties": map[string]interface{}{
+						"type": map[string]interface{}{
+							"type":        "string",
+							"description": "Error type",
+						},
+						"description": map[string]interface{}{
+							"type":        "string",
+							"description": "Error description",
+						},
+					},
+				},
+			},
+		},
+	}
+	return &schema
 }
