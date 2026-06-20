@@ -1,0 +1,37 @@
+{
+  "manifestVersion": "0.3",
+  "name": "newrelic-mcp",
+  "version": "1.0.2",
+  "description": "New Relic MCP server with 55 tools for APM, alerts, dashboards, synthetics, and more",
+  "author": {
+    "name": "Karl Dane"
+  },
+  "server": {
+    "type": "binary",
+    "entryPoint": "server/newrelic-mcp",
+    "mcp_config": {
+      "command": "server/newrelic-mcp",
+      "args": [],
+      "env": {
+        "NEWRELIC_API_KEY": "${user_config.newrelic_api_key}",
+        "NEWRELIC_REGION": "${user_config.newrelic_region}"
+      }
+    }
+  },
+  "user_config": {
+    "newrelic_api_key": {
+      "type": "string",
+      "title": "New Relic API Key",
+      "description": "Your New Relic User or Admin API key",
+      "sensitive": true,
+      "required": true
+    },
+    "newrelic_region": {
+      "type": "string",
+      "title": "Data Center Region",
+      "description": "New Relic data center (us or eu)",
+      "default": "us",
+      "required": false
+    }
+  }
+}
