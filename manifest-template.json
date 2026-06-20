@@ -1,11 +1,21 @@
 {
   "manifestVersion": "0.3",
   "name": "newrelic-mcp",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "New Relic MCP server with 55 tools for APM, alerts, dashboards, synthetics, and more",
+  "display_name": "New Relic MCP",
+  "long_description": "A Go-native MCP server providing comprehensive access to the New Relic observability platform. Includes 55 tools covering APM, infrastructure monitoring, alerts, dashboards, synthetics, workflows, service levels, and more. All tools carry EnforcerProfile metadata for automated policy enforcement.",
   "author": {
     "name": "Karl Dane"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/karldane/newrelic-mcp"
+  },
+  "homepage": "https://github.com/karldane/newrelic-mcp",
+  "license": "MIT",
+  "keywords": ["newrelic", "observability", "apm", "monitoring", "alerts", "dashboards"],
+  "tools_generated": true,
   "server": {
     "type": "binary",
     "entryPoint": "server/newrelic-mcp",
