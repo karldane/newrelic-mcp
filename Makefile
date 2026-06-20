@@ -44,13 +44,19 @@ build-windows:
 test:
 	go test ./newrelic -v
 
+# Generate manifest.json from scan + template
+.PHONY: generate-manifest
+generate-manifest: build-linux
+	@echo "Generating manifest.json from --scan-format=manifest..."
+	./generate-manifest.sh
+
 # Build MCP Bundle (.mcpb ZIP with manifest.json for Smithery)
 .PHONY: mcpb
-mcpb: build-linux
+mcpb: build-linux generate-manifest
 	@echo "Creating $(BINARY_NAME)-linux-amd64.mcpb..."
 	@mkdir -p /tmp/mcpb-build/server
 	cp $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64 /tmp/mcpb-build/server/$(BINARY_NAME)
-	cp manifest-template.json /tmp/mcpb-build/manifest.json
+	cp manifest.json /tmp/mcpb-build/manifest.json
 	cd /tmp/mcpb-build && zip -q -X $(BINARY_NAME)-linux-amd64.mcpb manifest.json server/$(BINARY_NAME)
 	mv /tmp/mcpb-build/$(BINARY_NAME)-linux-amd64.mcpb $(BUILD_DIR)/
 	rm -rf /tmp/mcpb-build
@@ -96,6 +102,7 @@ help:
 	@echo "  make              - Download dependencies and build binary"
 	@echo "  make deps         - Download and verify dependencies"
 	@echo "  make build        - Build the binary"
+	@echo "  make generate-manifest - Generate manifest.json from tool scan"
 	@echo "  make mcpb         - Build .mcpb release artifact (ZIP + manifest.json)"
 	@echo "  make build-all    - Build for all platforms (Linux, macOS, Windows)"
 	@echo "  make test         - Run tests"

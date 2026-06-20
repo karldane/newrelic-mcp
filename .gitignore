@@ -64,3 +64,4 @@ temp/
 
 # Build artifacts
 *.mcpb
+manifest.json
