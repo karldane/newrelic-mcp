@@ -92,6 +92,7 @@ publish: clean mcpb
 	VERSION="v$$MAJOR.$$MINOR.$$PATCH"; \
 	VNUM=$${VERSION#v}; \
 	git tag "$$VERSION"; \
+	git push origin "$$VERSION"; \
 	echo "Auto-bumped $$LATEST → $$VERSION"; \
 	SHA256=$$(openssl dgst -sha256 "$(BUILD_DIR)/$(BINARY_NAME)-linux-amd64.mcpb" | cut -d' ' -f2); \
 	RELEASE_URL="https://github.com/$(REPO_OWNER)/$(REPO_NAME)/releases/download/$$VERSION/$(BINARY_NAME)-linux-amd64.mcpb"; \
