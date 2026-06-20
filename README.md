@@ -10,6 +10,13 @@ A Go-native MCP (Model Context Protocol) server for the New Relic observability 
 - **Multi-region**: US and EU data center support (`NEWRELIC_REGION=us|eu`)
 - **TDD-built**: 80%+ test coverage across all tools
 
+## Registries
+
+This server is published on the following MCP registries:
+
+- **Smithery**: [`karldane/newrelic-mcp`](https://smithery.ai/servers/karldane/newrelic-mcp)
+- **MCP Registry**: [`io.github.karldane/newrelic-mcp`](https://registry.modelcontextprotocol.io/v0/servers?search=karldane)
+
 ## API Architecture
 
 All tools communicate with a single NerdGraph endpoint:
