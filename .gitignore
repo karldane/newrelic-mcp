@@ -40,6 +40,9 @@ Thumbs.db
 .env.local
 .env.*.local
 
+# MCP Registry auth tokens
+.mcpregistry_*
+
 # Binary output
 newrelic-mcp
 

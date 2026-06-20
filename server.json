@@ -1,0 +1,45 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.karldane/newrelic-mcp",
+  "title": "New Relic MCP",
+  "description": "Comprehensive MCP server for the New Relic observability platform with 55 tools covering APM, alerts, dashboards, synthetics, workflows, notifications, service levels, tags, entities, and workloads.",
+  "repository": {
+    "url": "https://github.com/karldane/newrelic-mcp",
+    "source": "github"
+  },
+  "version": "1.0.0",
+  "packages": [
+    {
+      "registryType": "mcpb",
+      "identifier": "https://github.com/karldane/newrelic-mcp/releases/download/v1.0.0/newrelic-mcp-linux-amd64.mcpb",
+      "fileSha256": "UPDATE_ME",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "NEWRELIC_API_KEY",
+          "description": "New Relic API key (User or Admin)",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "NEWRELIC_REGION",
+          "description": "Data center region (us or eu)",
+          "isRequired": false,
+          "default": "us",
+          "format": "string"
+        }
+      ],
+      "packageArguments": [
+        {
+          "type": "named",
+          "name": "-write-enabled",
+          "description": "Enable write operations (create, update, delete resources)",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}
