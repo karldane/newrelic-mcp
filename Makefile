@@ -51,7 +51,8 @@ mcpb: build-linux
 	@mkdir -p /tmp/mcpb-build/server
 	cp $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64 /tmp/mcpb-build/server/$(BINARY_NAME)
 	printf '{"manifestVersion":"0.3","server":{"type":"binary","entryPoint":"server/$(BINARY_NAME)"}}\n' > /tmp/mcpb-build/manifest.json
-	cd /tmp/mcpb-build && zip -q -X ../$(BINARY_NAME)-linux-amd64.mcpb manifest.json server/$(BINARY_NAME)
+	cd /tmp/mcpb-build && zip -q -X $(BINARY_NAME)-linux-amd64.mcpb manifest.json server/$(BINARY_NAME)
+	mv /tmp/mcpb-build/$(BINARY_NAME)-linux-amd64.mcpb $(BUILD_DIR)/
 	rm -rf /tmp/mcpb-build
 	@echo "SHA256:"
 	@openssl dgst -sha256 $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64.mcpb
