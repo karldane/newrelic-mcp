@@ -45,6 +45,8 @@ Thumbs.db
 
 # Binary output
 newrelic-mcp
+newrelic-mcp-*
+*.mcpb
 
 # Coverage reports
 coverage.txt
