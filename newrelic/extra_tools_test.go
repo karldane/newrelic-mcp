@@ -155,6 +155,50 @@ func TestNerdGraphQuerySuccess(t *testing.T) {
 	}
 }
 
+func TestRawGraphQuerySuccess(t *testing.T) {
+	mockNR := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"data": map[string]interface{}{
+				"myMutation": map[string]interface{}{
+					"result": "success",
+				},
+			},
+		})
+	}))
+	defer mockNR.Close()
+
+	client := NewClientWithEndpoint("test-key", mockNR.URL)
+	data, err := client.rawGraphQuery(context.Background(), "mutation { myMutation { result } }")
+	if err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+	mut, _ := data["myMutation"].(map[string]interface{})
+	if mut == nil {
+		t.Fatal("Expected myMutation in data")
+	}
+	if mut["result"] != "success" {
+		t.Errorf("Expected 'success', got: %v", mut["result"])
+	}
+}
+
+func TestRawGraphQueryNoData(t *testing.T) {
+	mockNR := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{})
+	}))
+	defer mockNR.Close()
+
+	client := NewClientWithEndpoint("test-key", mockNR.URL)
+	_, err := client.rawGraphQuery(context.Background(), "mutation { x { y } }")
+	if err == nil {
+		t.Fatal("Expected error for empty response")
+	}
+	if err.Error() != "no data in response" {
+		t.Errorf("Expected 'no data in response', got: %v", err)
+	}
+}
+
 func TestGetAccountIDCached(t *testing.T) {
 	client := NewClient("test-key")
 	client.accountID = "99999"

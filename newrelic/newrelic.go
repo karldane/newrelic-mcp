@@ -69,6 +69,23 @@ func graphQLError(result map[string]interface{}) string {
 	return strings.Join(msgs, "; ")
 }
 
+// rawGraphQuery sends a query and returns the "data" object directly.
+// Useful for mutations where the response field name varies.
+func (c *Client) rawGraphQuery(ctx context.Context, gql string) (map[string]interface{}, error) {
+	result, err := c.Query(ctx, gql, nil)
+	if err != nil {
+		return nil, err
+	}
+	data, _ := result["data"].(map[string]interface{})
+	if data == nil {
+		if errMsg := graphQLError(result); errMsg != "" {
+			return nil, fmt.Errorf("GraphQL error: %s", errMsg)
+		}
+		return nil, fmt.Errorf("no data in response")
+	}
+	return data, nil
+}
+
 func (c *Client) actorGraphQuery(ctx context.Context, gql string) (map[string]interface{}, error) {
 	result, err := c.Query(ctx, gql, nil)
 	if err != nil {
@@ -315,9 +332,41 @@ func (s *Server) registerTools() {
 	s.RegisterTool(&GetInfrastructureMetricsTool{client: s.client})
 	s.RegisterTool(&ListDashboardsTool{client: s.client})
 	s.RegisterTool(&GetDashboardDataTool{client: s.client})
+	// Synthetics tools
+	s.RegisterTool(&ListSyntheticMonitorsTool{client: s.client})
+	s.RegisterTool(&GetSyntheticMonitorTool{client: s.client})
+	s.RegisterTool(&ListPrivateLocationsTool{client: s.client})
+	// Synthetics write tools
+	s.RegisterTool(&CreatePingMonitorTool{client: s.client})
+	s.RegisterTool(&DeleteSyntheticMonitorTool{client: s.client})
+	// Dashboard CRUD tools
+	s.RegisterTool(&GetDashboardTool{client: s.client})
+	s.RegisterTool(&CreateDashboardTool{client: s.client})
+	s.RegisterTool(&UpdateDashboardTool{client: s.client})
+	s.RegisterTool(&DeleteDashboardTool{client: s.client})
+	// Alert Policy CRUD + NRQL conditions tools
+	s.RegisterTool(&GetAlertPolicyTool{client: s.client})
+	s.RegisterTool(&CreateAlertPolicyTool{client: s.client})
+	s.RegisterTool(&UpdateAlertPolicyTool{client: s.client})
+	s.RegisterTool(&DeleteAlertPolicyTool{client: s.client})
+	s.RegisterTool(&ListNRQLAlertConditionsTool{client: s.client})
+	// Workflow tools
+	s.RegisterTool(&ListWorkflowsTool{client: s.client})
+	s.RegisterTool(&GetWorkflowTool{client: s.client})
+	// Workflow write tools
+	s.RegisterTool(&CreateWorkflowTool{client: s.client})
+	s.RegisterTool(&UpdateWorkflowTool{client: s.client})
+	s.RegisterTool(&DeleteWorkflowTool{client: s.client})
+	// Notification tools
+	s.RegisterTool(&ListNotificationChannelsTool{client: s.client})
+	s.RegisterTool(&ListDestinationsTool{client: s.client})
+	// Notification write tools
+	s.RegisterTool(&CreateSlackChannelTool{client: s.client})
+	s.RegisterTool(&CreateEmailChannelTool{client: s.client})
+	s.RegisterTool(&DeleteNotificationChannelTool{client: s.client})
 	// Write tools - disabled by default
 	s.RegisterTool(&AcknowledgeAlertViolationTool{client: s.client})
-	s.RegisterTool(&CreateAlertConditionTool{client: s.client})
+	s.RegisterTool(&RealCreateAlertConditionTool{client: s.client})
 	s.RegisterTool(&AddDashboardWidgetTool{client: s.client})
 }
 

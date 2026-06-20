@@ -18,6 +18,20 @@ func TestWriteToolsRegistered(t *testing.T) {
 		"acknowledge_alert_violation",
 		"create_alert_condition",
 		"add_dashboard_widget",
+		"create_ping_monitor",
+		"delete_synthetic_monitor",
+		"create_dashboard",
+		"update_dashboard",
+		"delete_dashboard",
+		"create_alert_policy",
+		"update_alert_policy",
+		"delete_alert_policy",
+		"create_workflow",
+		"update_workflow",
+		"delete_workflow",
+		"create_slack_channel",
+		"create_email_channel",
+		"delete_notification_channel",
 	}
 
 	for _, toolName := range writeTools {
@@ -102,7 +116,21 @@ func TestCreateAlertConditionWriteDisabled(t *testing.T) {
 }
 
 func TestCreateAlertConditionWriteEnabled(t *testing.T) {
-	server := NewServer("test-key", true) // writeEnabled = true
+	mockNR := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"data": map[string]interface{}{
+				"alertsNrqlConditionCreate": map[string]interface{}{
+					"id":      "cond-1",
+					"name":    "Test Condition",
+					"enabled": true,
+				},
+			},
+		})
+	}))
+	defer mockNR.Close()
+
+	server := NewServerWithEndpoint("test-key", mockNR.URL, true)
 
 	ctx := context.Background()
 
@@ -110,7 +138,8 @@ func TestCreateAlertConditionWriteEnabled(t *testing.T) {
 		"policy_id":          "123",
 		"name":               "Test Condition",
 		"nrql_query":         "SELECT count(*) FROM Transaction",
-		"critical_threshold": 10,
+		"critical_threshold": float64(10),
+		"account_id":         "12345",
 	})
 
 	if err != nil {
