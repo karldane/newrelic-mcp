@@ -364,6 +364,26 @@ func (s *Server) registerTools() {
 	s.RegisterTool(&CreateSlackChannelTool{client: s.client})
 	s.RegisterTool(&CreateEmailChannelTool{client: s.client})
 	s.RegisterTool(&DeleteNotificationChannelTool{client: s.client})
+	// Tier 3: Service Level tools
+	s.RegisterTool(&ListServiceLevelsTool{client: s.client})
+	// Service Level write tools
+	s.RegisterTool(&CreateServiceLevelTool{client: s.client})
+	s.RegisterTool(&UpdateServiceLevelTool{client: s.client})
+	// Tier 3: Tag Management tools
+	s.RegisterTool(&GetEntityTagsTool{client: s.client})
+	// Tag write tools
+	s.RegisterTool(&AddEntityTagsTool{client: s.client})
+	s.RegisterTool(&RemoveEntityTagsTool{client: s.client})
+	s.RegisterTool(&ReplaceEntityTagsTool{client: s.client})
+	// Tier 3: Entity Operations tools
+	s.RegisterTool(&SearchEntitiesTool{client: s.client})
+	// Entity write tools
+	s.RegisterTool(&DeleteEntityTool{client: s.client})
+	// Tier 3: Cross-account NRQL
+	s.RegisterTool(&CrossAccountNRQLTool{client: s.client})
+	// Tier 3: Workloads tools
+	s.RegisterTool(&ListWorkloadsTool{client: s.client})
+	s.RegisterTool(&GetWorkloadTool{client: s.client})
 	// Write tools - disabled by default
 	s.RegisterTool(&AcknowledgeAlertViolationTool{client: s.client})
 	s.RegisterTool(&RealCreateAlertConditionTool{client: s.client})

@@ -32,6 +32,12 @@ func TestWriteToolsRegistered(t *testing.T) {
 		"create_slack_channel",
 		"create_email_channel",
 		"delete_notification_channel",
+		"create_service_level",
+		"update_service_level",
+		"add_entity_tags",
+		"remove_entity_tags",
+		"replace_entity_tags",
+		"delete_entity",
 	}
 
 	for _, toolName := range writeTools {
