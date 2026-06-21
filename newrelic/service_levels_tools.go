@@ -14,6 +14,7 @@ type ListServiceLevelsTool struct {
 
 func (t *ListServiceLevelsTool) Name() string        { return "list_service_levels" }
 func (t *ListServiceLevelsTool) Description() string { return "List service levels for an entity" }
+func (t *ListServiceLevelsTool) Title() string        { return "Service Levels" }
 func (t *ListServiceLevelsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -118,6 +119,7 @@ type CreateServiceLevelTool struct {
 
 func (t *CreateServiceLevelTool) Name() string        { return "create_service_level" }
 func (t *CreateServiceLevelTool) Description() string { return "Create a service level indicator with SLO (requires --write-enabled)" }
+func (t *CreateServiceLevelTool) Title() string        { return "Create Service Level" }
 func (t *CreateServiceLevelTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -257,6 +259,7 @@ type UpdateServiceLevelTool struct {
 
 func (t *UpdateServiceLevelTool) Name() string        { return "update_service_level" }
 func (t *UpdateServiceLevelTool) Description() string { return "Update a service level SLO target (requires --write-enabled)" }
+func (t *UpdateServiceLevelTool) Title() string        { return "Update Service Level" }
 func (t *UpdateServiceLevelTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",

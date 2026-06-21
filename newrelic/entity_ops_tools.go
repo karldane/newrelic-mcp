@@ -15,6 +15,7 @@ type SearchEntitiesTool struct {
 
 func (t *SearchEntitiesTool) Name() string        { return "search_entities" }
 func (t *SearchEntitiesTool) Description() string { return "Search entities with freeform NRQL query" }
+func (t *SearchEntitiesTool) Title() string        { return "Entity Search" }
 func (t *SearchEntitiesTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -123,6 +124,7 @@ type DeleteEntityTool struct {
 
 func (t *DeleteEntityTool) Name() string        { return "delete_entity" }
 func (t *DeleteEntityTool) Description() string { return "Delete entities by GUID (requires --write-enabled)" }
+func (t *DeleteEntityTool) Title() string        { return "Delete Entity" }
 func (t *DeleteEntityTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",

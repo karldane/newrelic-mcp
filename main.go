@@ -36,6 +36,12 @@ func main() {
 	writeEnabled := flag.Bool("write-enabled", false, "Enable write tools (disabled by default for safety)")
 	flag.Parse()
 
+	// Also check WRITE_ENABLED env var (for Smithery config support)
+	writeEnv := os.Getenv("WRITE_ENABLED")
+	if writeEnv == "true" || writeEnv == "1" {
+		*writeEnabled = true
+	}
+
 	// Check for API key after flag parsing (scan mode doesn't need it)
 	if apiKey == "" {
 		fmt.Fprintln(os.Stderr, "Error: NEWRELIC_API_KEY environment variable is required")

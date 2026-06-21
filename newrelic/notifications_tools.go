@@ -14,6 +14,7 @@ type ListNotificationChannelsTool struct {
 
 func (t *ListNotificationChannelsTool) Name() string        { return "list_notification_channels" }
 func (t *ListNotificationChannelsTool) Description() string { return "List notification channels" }
+func (t *ListNotificationChannelsTool) Title() string       { return "Notification Channels" }
 func (t *ListNotificationChannelsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -104,6 +105,7 @@ type ListDestinationsTool struct {
 
 func (t *ListDestinationsTool) Name() string        { return "list_destinations" }
 func (t *ListDestinationsTool) Description() string { return "List notification destinations" }
+func (t *ListDestinationsTool) Title() string       { return "Notification Destinations" }
 func (t *ListDestinationsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -196,6 +198,7 @@ type CreateSlackChannelTool struct {
 
 func (t *CreateSlackChannelTool) Name() string        { return "create_slack_channel" }
 func (t *CreateSlackChannelTool) Description() string { return "Create a Slack notification channel (requires --write-enabled)" }
+func (t *CreateSlackChannelTool) Title() string       { return "Create Slack Channel" }
 func (t *CreateSlackChannelTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -312,6 +315,7 @@ type CreateEmailChannelTool struct {
 
 func (t *CreateEmailChannelTool) Name() string        { return "create_email_channel" }
 func (t *CreateEmailChannelTool) Description() string { return "Create an email notification channel (requires --write-enabled)" }
+func (t *CreateEmailChannelTool) Title() string       { return "Create Email Channel" }
 func (t *CreateEmailChannelTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -423,6 +427,7 @@ type DeleteNotificationChannelTool struct {
 
 func (t *DeleteNotificationChannelTool) Name() string        { return "delete_notification_channel" }
 func (t *DeleteNotificationChannelTool) Description() string { return "Delete a notification channel (requires --write-enabled)" }
+func (t *DeleteNotificationChannelTool) Title() string       { return "Delete Channel" }
 func (t *DeleteNotificationChannelTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",

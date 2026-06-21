@@ -16,6 +16,7 @@ type ListApplicationsTool struct {
 
 func (t *ListApplicationsTool) Name() string        { return "list_applications" }
 func (t *ListApplicationsTool) Description() string { return "List APM applications" }
+func (t *ListApplicationsTool) Title() string { return "APM Applications" }
 func (t *ListApplicationsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -111,6 +112,7 @@ type GetAlertConditionsTool struct {
 
 func (t *GetAlertConditionsTool) Name() string        { return "get_alert_conditions" }
 func (t *GetAlertConditionsTool) Description() string { return "Get alert conditions" }
+func (t *GetAlertConditionsTool) Title() string { return "Alert Conditions" }
 func (t *GetAlertConditionsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -221,6 +223,7 @@ type QueryTracesTool struct {
 
 func (t *QueryTracesTool) Name() string        { return "query_traces" }
 func (t *QueryTracesTool) Description() string { return "Query distributed traces" }
+func (t *QueryTracesTool) Title() string { return "Distributed Traces" }
 func (t *QueryTracesTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -304,6 +307,7 @@ func (t *GetApplicationMetricsTool) Name() string { return "get_application_metr
 func (t *GetApplicationMetricsTool) Description() string {
 	return "Get comprehensive application metrics"
 }
+func (t *GetApplicationMetricsTool) Title() string { return "Application Metrics" }
 func (t *GetApplicationMetricsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -370,6 +374,7 @@ type GetAlertViolationsTool struct {
 
 func (t *GetAlertViolationsTool) Name() string        { return "get_alert_violations" }
 func (t *GetAlertViolationsTool) Description() string { return "Get alert violations" }
+func (t *GetAlertViolationsTool) Title() string { return "Alert Violations" }
 func (t *GetAlertViolationsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -440,6 +445,7 @@ func (t *GetTransactionTracesTool) Name() string { return "get_transaction_trace
 func (t *GetTransactionTracesTool) Description() string {
 	return "Get slowest transaction traces for an application"
 }
+func (t *GetTransactionTracesTool) Title() string { return "Transaction Traces" }
 func (t *GetTransactionTracesTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -515,6 +521,7 @@ func (t *GetTraceDetailsTool) Name() string { return "get_trace_details" }
 func (t *GetTraceDetailsTool) Description() string {
 	return "Get detailed span waterfall for a specific trace ID"
 }
+func (t *GetTraceDetailsTool) Title() string { return "Trace Details" }
 func (t *GetTraceDetailsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -585,6 +592,7 @@ func (t *TailLogsTool) Name() string { return "tail_logs" }
 func (t *TailLogsTool) Description() string {
 	return "Tail logs in real-time (returns latest logs, use with polling)"
 }
+func (t *TailLogsTool) Title() string { return "Live Log Stream" }
 func (t *TailLogsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -677,6 +685,7 @@ func (t *GetInfrastructureMetricsTool) Name() string { return "get_infrastructur
 func (t *GetInfrastructureMetricsTool) Description() string {
 	return "Get infrastructure metrics for hosts, containers, or Kubernetes"
 }
+func (t *GetInfrastructureMetricsTool) Title() string { return "Infrastructure Metrics" }
 func (t *GetInfrastructureMetricsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -801,6 +810,7 @@ func (t *ListDashboardsTool) Name() string { return "list_dashboards" }
 func (t *ListDashboardsTool) Description() string {
 	return "List all dashboards in your New Relic account"
 }
+func (t *ListDashboardsTool) Title() string { return "Dashboard List" }
 func (t *ListDashboardsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -889,6 +899,7 @@ func (t *GetDashboardDataTool) Name() string { return "get_dashboard_data" }
 func (t *GetDashboardDataTool) Description() string {
 	return "Get data from a specific dashboard's widgets"
 }
+func (t *GetDashboardDataTool) Title() string { return "Dashboard Data" }
 func (t *GetDashboardDataTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -1011,6 +1022,7 @@ func (t *AcknowledgeAlertViolationTool) Name() string { return "acknowledge_aler
 func (t *AcknowledgeAlertViolationTool) Description() string {
 	return "Acknowledge an alert violation (disabled without --write-enabled)"
 }
+func (t *AcknowledgeAlertViolationTool) Title() string { return "Acknowledge Violation" }
 func (t *AcknowledgeAlertViolationTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -1078,6 +1090,7 @@ func (t *CreateAlertConditionTool) Name() string { return "create_alert_conditio
 func (t *CreateAlertConditionTool) Description() string {
 	return "Create a new alert condition in an alert policy (disabled without --write-enabled)"
 }
+func (t *CreateAlertConditionTool) Title() string { return "Create Alert Condition" }
 func (t *CreateAlertConditionTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -1155,6 +1168,7 @@ func (t *AddDashboardWidgetTool) Name() string { return "add_dashboard_widget" }
 func (t *AddDashboardWidgetTool) Description() string {
 	return "Add a widget to an existing dashboard (disabled without --write-enabled)"
 }
+func (t *AddDashboardWidgetTool) Title() string { return "Add Dashboard Widget" }
 func (t *AddDashboardWidgetTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",

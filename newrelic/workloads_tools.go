@@ -14,6 +14,7 @@ type ListWorkloadsTool struct {
 
 func (t *ListWorkloadsTool) Name() string        { return "list_workloads" }
 func (t *ListWorkloadsTool) Description() string { return "List workloads for an account" }
+func (t *ListWorkloadsTool) Title() string        { return "Workload List" }
 func (t *ListWorkloadsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -105,6 +106,7 @@ type GetWorkloadTool struct {
 
 func (t *GetWorkloadTool) Name() string        { return "get_workload" }
 func (t *GetWorkloadTool) Description() string { return "Get a workload by GUID" }
+func (t *GetWorkloadTool) Title() string        { return "Workload Details" }
 func (t *GetWorkloadTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",

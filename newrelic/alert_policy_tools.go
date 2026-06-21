@@ -15,6 +15,7 @@ type GetAlertPolicyTool struct {
 
 func (t *GetAlertPolicyTool) Name() string        { return "get_alert_policy" }
 func (t *GetAlertPolicyTool) Description() string { return "Get an alert policy by ID" }
+func (t *GetAlertPolicyTool) Title() string       { return "Alert Policy Details" }
 func (t *GetAlertPolicyTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -105,6 +106,7 @@ type CreateAlertPolicyTool struct {
 
 func (t *CreateAlertPolicyTool) Name() string        { return "create_alert_policy" }
 func (t *CreateAlertPolicyTool) Description() string { return "Create an alert policy (requires --write-enabled)" }
+func (t *CreateAlertPolicyTool) Title() string       { return "Create Alert Policy" }
 func (t *CreateAlertPolicyTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -194,6 +196,7 @@ type UpdateAlertPolicyTool struct {
 
 func (t *UpdateAlertPolicyTool) Name() string        { return "update_alert_policy" }
 func (t *UpdateAlertPolicyTool) Description() string { return "Update an alert policy (requires --write-enabled)" }
+func (t *UpdateAlertPolicyTool) Title() string       { return "Update Alert Policy" }
 func (t *UpdateAlertPolicyTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -288,6 +291,7 @@ type DeleteAlertPolicyTool struct {
 
 func (t *DeleteAlertPolicyTool) Name() string        { return "delete_alert_policy" }
 func (t *DeleteAlertPolicyTool) Description() string { return "Delete an alert policy (requires --write-enabled)" }
+func (t *DeleteAlertPolicyTool) Title() string       { return "Delete Alert Policy" }
 func (t *DeleteAlertPolicyTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -359,6 +363,7 @@ type ListNRQLAlertConditionsTool struct {
 
 func (t *ListNRQLAlertConditionsTool) Name() string        { return "list_nrql_alert_conditions" }
 func (t *ListNRQLAlertConditionsTool) Description() string { return "List NRQL alert conditions for a policy" }
+func (t *ListNRQLAlertConditionsTool) Title() string       { return "NRQL Alert Conditions" }
 func (t *ListNRQLAlertConditionsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -495,6 +500,7 @@ type RealCreateAlertConditionTool struct {
 
 func (t *RealCreateAlertConditionTool) Name() string        { return "create_alert_condition" }
 func (t *RealCreateAlertConditionTool) Description() string { return "Create a new alert condition in an alert policy (requires --write-enabled)" }
+func (t *RealCreateAlertConditionTool) Title() string       { return "Create NRQL Condition" }
 func (t *RealCreateAlertConditionTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",

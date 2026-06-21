@@ -397,6 +397,7 @@ type NRQLQueryTool struct {
 
 func (t *NRQLQueryTool) Name() string        { return "nrql_query" }
 func (t *NRQLQueryTool) Description() string { return "Execute NRQL queries" }
+func (t *NRQLQueryTool) Title() string       { return "NRQL Query" }
 func (t *NRQLQueryTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -454,6 +455,7 @@ type ListAlertsTool struct {
 
 func (t *ListAlertsTool) Name() string        { return "list_alerts" }
 func (t *ListAlertsTool) Description() string { return "List alert policies" }
+func (t *ListAlertsTool) Title() string       { return "Alert Policies" }
 func (t *ListAlertsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -543,6 +545,7 @@ type GetAPMMetricsTool struct {
 
 func (t *GetAPMMetricsTool) Name() string        { return "get_apm_metrics" }
 func (t *GetAPMMetricsTool) Description() string { return "Get APM metrics" }
+func (t *GetAPMMetricsTool) Title() string       { return "APM Metrics" }
 func (t *GetAPMMetricsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -611,6 +614,7 @@ type SearchLogsTool struct {
 
 func (t *SearchLogsTool) Name() string        { return "search_logs" }
 func (t *SearchLogsTool) Description() string { return "Search logs" }
+func (t *SearchLogsTool) Title() string       { return "Log Search" }
 func (t *SearchLogsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",

@@ -15,6 +15,7 @@ type CrossAccountNRQLTool struct {
 
 func (t *CrossAccountNRQLTool) Name() string        { return "cross_account_nrql" }
 func (t *CrossAccountNRQLTool) Description() string { return "Run NRQL query across multiple accounts" }
+func (t *CrossAccountNRQLTool) Title() string        { return "Cross-Account NRQL" }
 func (t *CrossAccountNRQLTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",

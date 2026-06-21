@@ -15,6 +15,7 @@ type GetEntityTagsTool struct {
 
 func (t *GetEntityTagsTool) Name() string        { return "get_entity_tags" }
 func (t *GetEntityTagsTool) Description() string { return "Get all tags for an entity" }
+func (t *GetEntityTagsTool) Title() string        { return "Entity Tags" }
 func (t *GetEntityTagsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -108,6 +109,7 @@ type AddEntityTagsTool struct {
 
 func (t *AddEntityTagsTool) Name() string        { return "add_entity_tags" }
 func (t *AddEntityTagsTool) Description() string { return "Add tags to an entity (requires --write-enabled)" }
+func (t *AddEntityTagsTool) Title() string        { return "Add Tags" }
 func (t *AddEntityTagsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -216,6 +218,7 @@ type RemoveEntityTagsTool struct {
 
 func (t *RemoveEntityTagsTool) Name() string        { return "remove_entity_tags" }
 func (t *RemoveEntityTagsTool) Description() string { return "Remove tags from an entity (requires --write-enabled)" }
+func (t *RemoveEntityTagsTool) Title() string        { return "Remove Tags" }
 func (t *RemoveEntityTagsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -317,6 +320,7 @@ type ReplaceEntityTagsTool struct {
 
 func (t *ReplaceEntityTagsTool) Name() string        { return "replace_entity_tags" }
 func (t *ReplaceEntityTagsTool) Description() string { return "Replace all tags on an entity (requires --write-enabled)" }
+func (t *ReplaceEntityTagsTool) Title() string        { return "Replace Tags" }
 func (t *ReplaceEntityTagsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",

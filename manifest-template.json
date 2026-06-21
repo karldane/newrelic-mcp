@@ -1,10 +1,10 @@
 {
   "manifestVersion": "0.3",
   "name": "newrelic-mcp",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "New Relic MCP server with 55 tools for APM, alerts, dashboards, synthetics, and more",
   "display_name": "New Relic MCP",
-  "long_description": "A Go-native MCP server providing comprehensive access to the New Relic observability platform. Includes 55 tools covering APM, infrastructure monitoring, alerts, dashboards, synthetics, workflows, service levels, and more. All tools carry EnforcerProfile metadata for automated policy enforcement.",
+  "long_description": "A Go-native MCP server providing comprehensive access to the New Relic observability platform. Includes 55 tools covering APM, infrastructure monitoring, alerts, dashboards, synthetics, workflows, service levels, and more.",
   "author": {
     "name": "Karl Dane"
   },
@@ -24,7 +24,8 @@
       "args": [],
       "env": {
         "NEWRELIC_API_KEY": "${user_config.newrelic_api_key}",
-        "NEWRELIC_REGION": "${user_config.newrelic_region}"
+        "NEWRELIC_REGION": "${user_config.newrelic_region}",
+        "WRITE_ENABLED": "${user_config.write_enabled}"
       }
     }
   },
@@ -41,6 +42,13 @@
       "title": "Data Center Region",
       "description": "New Relic data center (us or eu)",
       "default": "us",
+      "required": false
+    },
+    "write_enabled": {
+      "type": "boolean",
+      "title": "Enable Write Operations",
+      "description": "Allow creating, updating, and deleting resources (disabled by default for safety)",
+      "default": false,
       "required": false
     }
   }

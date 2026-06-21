@@ -15,6 +15,7 @@ type ListWorkflowsTool struct {
 
 func (t *ListWorkflowsTool) Name() string        { return "list_workflows" }
 func (t *ListWorkflowsTool) Description() string { return "List workflows for an account" }
+func (t *ListWorkflowsTool) Title() string        { return "Workflow List" }
 func (t *ListWorkflowsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -117,6 +118,7 @@ type GetWorkflowTool struct {
 
 func (t *GetWorkflowTool) Name() string        { return "get_workflow" }
 func (t *GetWorkflowTool) Description() string { return "Get a workflow by ID" }
+func (t *GetWorkflowTool) Title() string        { return "Workflow Details" }
 func (t *GetWorkflowTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -207,6 +209,7 @@ type CreateWorkflowTool struct {
 
 func (t *CreateWorkflowTool) Name() string        { return "create_workflow" }
 func (t *CreateWorkflowTool) Description() string { return "Create a workflow (requires --write-enabled)" }
+func (t *CreateWorkflowTool) Title() string        { return "Create Workflow" }
 func (t *CreateWorkflowTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -354,6 +357,7 @@ type UpdateWorkflowTool struct {
 
 func (t *UpdateWorkflowTool) Name() string        { return "update_workflow" }
 func (t *UpdateWorkflowTool) Description() string { return "Update a workflow (requires --write-enabled)" }
+func (t *UpdateWorkflowTool) Title() string        { return "Update Workflow" }
 func (t *UpdateWorkflowTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -471,6 +475,7 @@ type DeleteWorkflowTool struct {
 
 func (t *DeleteWorkflowTool) Name() string        { return "delete_workflow" }
 func (t *DeleteWorkflowTool) Description() string { return "Delete a workflow (requires --write-enabled)" }
+func (t *DeleteWorkflowTool) Title() string        { return "Delete Workflow" }
 func (t *DeleteWorkflowTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",

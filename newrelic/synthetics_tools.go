@@ -15,6 +15,7 @@ type ListSyntheticMonitorsTool struct {
 
 func (t *ListSyntheticMonitorsTool) Name() string        { return "list_synthetic_monitors" }
 func (t *ListSyntheticMonitorsTool) Description() string { return "List synthetic monitors" }
+func (t *ListSyntheticMonitorsTool) Title() string        { return "Synthetic Monitors" }
 func (t *ListSyntheticMonitorsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -111,6 +112,7 @@ type GetSyntheticMonitorTool struct {
 
 func (t *GetSyntheticMonitorTool) Name() string        { return "get_synthetic_monitor" }
 func (t *GetSyntheticMonitorTool) Description() string { return "Get a synthetic monitor by GUID" }
+func (t *GetSyntheticMonitorTool) Title() string        { return "Monitor Details" }
 func (t *GetSyntheticMonitorTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -180,6 +182,7 @@ type ListPrivateLocationsTool struct {
 
 func (t *ListPrivateLocationsTool) Name() string        { return "list_private_locations" }
 func (t *ListPrivateLocationsTool) Description() string { return "List private locations" }
+func (t *ListPrivateLocationsTool) Title() string        { return "Private Locations" }
 func (t *ListPrivateLocationsTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -267,6 +270,7 @@ type CreatePingMonitorTool struct {
 
 func (t *CreatePingMonitorTool) Name() string        { return "create_ping_monitor" }
 func (t *CreatePingMonitorTool) Description() string { return "Create a ping monitor (requires --write-enabled)" }
+func (t *CreatePingMonitorTool) Title() string        { return "Create Ping Monitor" }
 func (t *CreatePingMonitorTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -382,6 +386,7 @@ type DeleteSyntheticMonitorTool struct {
 
 func (t *DeleteSyntheticMonitorTool) Name() string        { return "delete_synthetic_monitor" }
 func (t *DeleteSyntheticMonitorTool) Description() string { return "Delete a synthetic monitor (requires --write-enabled)" }
+func (t *DeleteSyntheticMonitorTool) Title() string        { return "Delete Monitor" }
 func (t *DeleteSyntheticMonitorTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",

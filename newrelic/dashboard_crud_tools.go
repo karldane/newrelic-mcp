@@ -15,6 +15,7 @@ type GetDashboardTool struct {
 
 func (t *GetDashboardTool) Name() string        { return "get_dashboard" }
 func (t *GetDashboardTool) Description() string { return "Get full dashboard configuration by GUID" }
+func (t *GetDashboardTool) Title() string        { return "Dashboard Details" }
 func (t *GetDashboardTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -149,6 +150,7 @@ type CreateDashboardTool struct {
 
 func (t *CreateDashboardTool) Name() string        { return "create_dashboard" }
 func (t *CreateDashboardTool) Description() string { return "Create a new dashboard (requires --write-enabled)" }
+func (t *CreateDashboardTool) Title() string        { return "Create Dashboard" }
 func (t *CreateDashboardTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -298,6 +300,7 @@ type UpdateDashboardTool struct {
 
 func (t *UpdateDashboardTool) Name() string        { return "update_dashboard" }
 func (t *UpdateDashboardTool) Description() string { return "Update a dashboard (requires --write-enabled)" }
+func (t *UpdateDashboardTool) Title() string        { return "Update Dashboard" }
 func (t *UpdateDashboardTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
@@ -419,6 +422,7 @@ type DeleteDashboardTool struct {
 
 func (t *DeleteDashboardTool) Name() string        { return "delete_dashboard" }
 func (t *DeleteDashboardTool) Description() string { return "Delete a dashboard (requires --write-enabled)" }
+func (t *DeleteDashboardTool) Title() string        { return "Delete Dashboard" }
 func (t *DeleteDashboardTool) Schema() mcp.ToolInputSchema {
 	return mcp.ToolInputSchema{
 		Type: "object",
