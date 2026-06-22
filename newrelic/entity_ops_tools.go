@@ -169,7 +169,7 @@ func (t *DeleteEntityTool) Handle(ctx framework.CallContext, args map[string]int
 func (t *DeleteEntityTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskHigh),
-		framework.WithImpact(framework.ImpactWrite),
+		framework.WithImpact(framework.ImpactDelete),
 		framework.WithResourceCost(3),
 		framework.WithPII(false),
 		framework.WithIdempotent(true),

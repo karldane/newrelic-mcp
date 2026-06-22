@@ -528,7 +528,7 @@ func (t *DeleteWorkflowTool) Handle(ctx framework.CallContext, args map[string]i
 func (t *DeleteWorkflowTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskHigh),
-		framework.WithImpact(framework.ImpactWrite),
+		framework.WithImpact(framework.ImpactDelete),
 		framework.WithResourceCost(2),
 		framework.WithPII(false),
 		framework.WithIdempotent(true),

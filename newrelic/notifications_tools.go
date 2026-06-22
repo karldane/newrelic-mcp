@@ -483,7 +483,7 @@ func (t *DeleteNotificationChannelTool) Handle(ctx framework.CallContext, args m
 func (t *DeleteNotificationChannelTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskHigh),
-		framework.WithImpact(framework.ImpactWrite),
+		framework.WithImpact(framework.ImpactDelete),
 		framework.WithResourceCost(2),
 		framework.WithPII(false),
 		framework.WithIdempotent(true),

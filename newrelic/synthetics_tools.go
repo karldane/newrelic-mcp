@@ -425,7 +425,7 @@ func (t *DeleteSyntheticMonitorTool) Handle(ctx framework.CallContext, args map[
 func (t *DeleteSyntheticMonitorTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
-		framework.WithImpact(framework.ImpactWrite),
+		framework.WithImpact(framework.ImpactDelete),
 		framework.WithResourceCost(2),
 		framework.WithPII(false),
 		framework.WithIdempotent(true),

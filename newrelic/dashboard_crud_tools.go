@@ -473,7 +473,7 @@ func (t *DeleteDashboardTool) Handle(ctx framework.CallContext, args map[string]
 func (t *DeleteDashboardTool) EnforcerProfile(args map[string]interface{}) *framework.EnforcerProfile {
 	return framework.NewEnforcerProfile(
 		framework.WithRisk(framework.RiskMed),
-		framework.WithImpact(framework.ImpactWrite),
+		framework.WithImpact(framework.ImpactDelete),
 		framework.WithResourceCost(2),
 		framework.WithPII(false),
 		framework.WithIdempotent(true),
