@@ -1,7 +1,7 @@
 {
-  "manifestVersion": "0.3",
+  "manifest_version": "0.3",
   "name": "newrelic-mcp",
-  "version": "1.0.7",
+  "version": "1.0.9",
   "description": "New Relic MCP server with 55 tools for APM, alerts, dashboards, synthetics, and more",
   "display_name": "New Relic MCP",
   "long_description": "A Go-native MCP server providing comprehensive access to the New Relic observability platform. Includes 55 tools covering APM, infrastructure monitoring, alerts, dashboards, synthetics, workflows, service levels, and more.",
@@ -18,7 +18,7 @@
   "tools_generated": true,
   "server": {
     "type": "binary",
-    "entryPoint": "server/newrelic-mcp",
+    "entry_point": "server/newrelic-mcp",
     "mcp_config": {
       "command": "server/newrelic-mcp",
       "args": [],
